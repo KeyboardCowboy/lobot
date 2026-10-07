@@ -85,7 +85,25 @@ node tools/lobot.js init /tmp/lobot-test --name "Test" --key TST
 node tools/lobot.js status /tmp/lobot-test
 ```
 
-To release, update `version` in `package.json` and `CHANGELOG.md`, merge to `main`, and tag the commit `vX.Y.Z`. Projects get whatever is on `main` the next time they run `update`.
+Projects get whatever is on `main` the next time they run `update`, so `main` should always be in a working state.
+
+### Versions are automatic
+
+Every push to `main` runs [semantic-release](https://semantic-release.gitbook.io/) (`.github/workflows/release.yml`, `.releaserc.json`). It reads the commit messages since the last release, picks the next version, updates `package.json` and `CHANGELOG.md`, tags the commit `vX.Y.Z`, and publishes a GitHub release. Never edit the version or the changelog by hand.
+
+That only works when commit messages follow [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): summary`.
+
+| Commit message | Meaning | Version |
+|---|---|---|
+| `feat(engine): add a risk tracker skill` | Something new | Minor: 0.1.0 → 0.2.0 |
+| `fix(engine): correct the journal close steps` | A correction | Patch: 0.1.0 → 0.1.1 |
+| `docs(engine): reword the people skill` | Any other change to what projects receive | Patch |
+| `feat(engine)!: rename the decision log file` | Projects must change something to keep working | Major: 0.1.0 → 1.0.0 |
+| `docs: fix a typo in the README`, `ci: ...` | Nothing projects receive changed | No release |
+
+Use the scope to say what changed: `engine` (reaches projects on update), `scaffold` (reaches new projects only), or `tool` (`tools/lobot.js`). Any commit with one of those scopes releases at least a patch. A `!` after the scope, or a `BREAKING CHANGE:` footer, marks a change projects have to act on.
+
+A commit that doesn't follow the format is not counted: its changes still reach projects, but under the old version number, with no changelog entry.
 
 ## Requirements
 

@@ -1,8 +1,6 @@
 # Changelog
 
-Every release lists what changed in `engine/` (reaches projects on update) and `scaffold/` (reaches new projects only).
-
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-10-07)
 
 First version, extracted from the first Project Brain.
 

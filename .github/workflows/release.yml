@@ -1,0 +1,44 @@
+name: Release
+
+# On every push to main: work out the next version from the commit messages,
+# update package.json and CHANGELOG.md, tag it, and publish a GitHub release.
+# Nothing is published to npm. See "Develop and release" in README.md.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check the tool runs
+        run: node tools/lobot.js --version
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # The release tools are fetched here, not listed in package.json, so that
+        # `npx github:KeyboardCowboy/lobot` stays dependency-free and fast.
+        # Keep the conventionalcommits preset at 9: version 10 fails with semantic-release 25.
+        run: >
+          npx --yes
+          -p semantic-release@25
+          -p @semantic-release/changelog@7
+          -p @semantic-release/git@11
+          -p conventional-changelog-conventionalcommits@9
+          semantic-release
