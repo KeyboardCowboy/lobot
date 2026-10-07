@@ -149,7 +149,7 @@ function localChanges(project) {
   }
   // Agent copies in .claude/agents/ are derived; an edit there would be lost.
   for (const rel of Object.keys(engine)) {
-    if (!rel.startsWith('agents/')) continue;
+    if (!isAgentDefinition(rel)) continue;
     const name = rel.slice('agents/'.length);
     const copy = path.join(project, '.claude', 'agents', name);
     if (!fs.existsSync(copy)) continue;
@@ -180,11 +180,16 @@ function copyEngine(project, rels) {
   for (const rel of rels) copyFile(path.join(ENGINE, rel), path.join(generalDir(project), rel));
 }
 
+/** agents/<name>.md is a definition; files in agents/<name>/ are that agent's supporting files. */
+function isAgentDefinition(rel) {
+  return /^agents\/[^/]+\.md$/.test(rel);
+}
+
 function copyAgents(project) {
   const src = path.join(ENGINE, 'agents');
   const copied = [];
   for (const rel of walk(src)) {
-    if (!rel.endsWith('.md')) continue;
+    if (!isAgentDefinition('agents/' + rel)) continue;
     const from = path.join(src, rel);
     const to = path.join(project, '.claude', 'agents', rel);
     if (fs.existsSync(to) && sha(to) === sha(from)) continue;

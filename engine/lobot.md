@@ -19,9 +19,9 @@ This file is the same in every Project Brain. It is part of Lobot (`.ai/general/
 | `.ai/general/research/` | Reference research behind the skills (e.g. industry criteria for ADRs, decision logs, risk registers, RACI). Suggestions in it are not rules until a PM adopts them. | Lobot |
 | `.ai/general/context-docs.md` | How to write and organize context docs (progressive disclosure, frontmatter, generated files). | Lobot |
 | `.ai/general/delegation.md` | Roster of named agents and the rules for handing work to them (routing, briefs, approvals, sequencing). | Lobot |
-| `.ai/general/agents/` | Master copies of agent definitions. Lobot copies them to `.claude/agents/`, where Claude looks for them. | Lobot |
+| `.ai/general/agents/` | Named agents. `<name>.md` is the agent's definition, which Lobot copies to `.claude/agents/`, where Claude looks for it. `<name>/` holds its supporting files, e.g. Lucille the librarian's personality and general corrections log. | Lobot |
+| `.ai/project/agents/<name>/` | An agent's settings for this project: `config.md` (autonomy levels, sources) and `corrections.md` (project corrections log). | PM |
 | `.claude/skills/`, `.agents/skills/` | Links to every skill in `.ai/general/skills/` and `.ai/project/skills/`, so assistants that discover skills on their own find them. Made by Lobot; the skills themselves live in `.ai/`. | Lobot |
-| `.ai/general/lucille-*.md`, `.ai/project/lucille*.md` | Lucille the librarian: personality, corrections logs (global and project), and project config (autonomy levels, sources). | PM |
 | `.ai/general/scripts/` | Helper scripts that work on any project (e.g. `drupal_config_inventory.py`). | Lobot |
 | `.ai/project/` | How the assistant helps on **this** project only (project conventions, client norms, workflows). | PM + assistant |
 | `.ai/project/github.md` | The project's repo, GitHub Project boards, field and option IDs (used by the github skill). | PM + assistant |

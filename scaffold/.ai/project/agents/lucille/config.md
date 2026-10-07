@@ -4,7 +4,7 @@ Project-specific settings for Lucille (`.ai/general/agents/lucille.md`).
 
 ## Autonomy
 
-Promote an area by moving it to Autonomous. Promote when the PM has had a run of approvals with no corrections (see `lucille-corrections.md`).
+Promote an area by moving it to Autonomous. Promote when the PM has had a run of approvals with no corrections (see `corrections.md` in this folder).
 
 - **Autonomous:** meeting notes (`docs/meetings/`), journal (`docs/journals/`), intake and filing.
 - **Junior (propose, PM approves):** `docs/people.yaml`, RACI, `docs/decisions.yaml`, `docs/glossary.yaml`, `docs/risks.md`.

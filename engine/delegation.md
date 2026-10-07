@@ -1,6 +1,6 @@
 # Delegation
 
-How the assistant hands work to the Project Brain's named agents. Agent definitions live in `.ai/general/agents/`; Lobot copies them to `.claude/agents/`, where Claude looks for them, so edit the copy in `.ai/general/agents/`. Each agent is treated like a junior employee: the PM trains them, and each area they cover has an autonomy level the PM can promote (see the agent's project config).
+How the assistant hands work to the Project Brain's named agents. Everything about an agent lives under an `agents/` folder: its definition is `.ai/general/agents/<name>.md`, its supporting files (personality, general corrections log) are in `.ai/general/agents/<name>/`, and its settings for this project (autonomy levels, project corrections log) are in `.ai/project/agents/<name>/`. Lobot copies the definitions to `.claude/agents/`, where Claude looks for them, so edit the copy in `.ai/general/agents/`. Each agent is treated like a junior employee: the PM trains them, and each area they cover has an autonomy level the PM can promote (see the agent's project config).
 
 ## Roster
 

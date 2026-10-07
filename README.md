@@ -62,6 +62,8 @@ A Project Brain set up before Lobot has an `.ai/general/` with no version record
 
 Its `CLAUDE.md` also predates `lobot.md` and repeats what is now in it. Replace the repeated parts with the short form in `scaffold/CLAUDE.md`, keeping the project-specific rows.
 
+Its Lucille files are in the old places. Move `.ai/project/lucille.md` to `.ai/project/agents/lucille/config.md` and `.ai/project/lucille-corrections.md` to `.ai/project/agents/lucille/corrections.md`. After the update, delete the old `.ai/general/lucille-personality.md` and `.ai/general/lucille-corrections.md`; the update leaves them in place because it only deletes files it installed.
+
 ## Contribute a change
 
 Improvements are usually found while working on a real project, in that project's `.ai/general/`. The assistant can prepare the contribution (see the lobot skill). By hand:
@@ -70,7 +72,7 @@ Improvements are usually found while working on a real project, in that project'
 2. Copy the changed files into `engine/` in a clone of this repository. Remove anything project-specific: no client names, people, or project details.
 3. Add a line to `CHANGELOG.md` and open a pull request.
 
-This includes general Lucille corrections (`lucille-corrections.md`) and shared glossary terms (`glossary.yaml`), which grow during project work.
+This includes general Lucille corrections (`agents/lucille/corrections.md`) and shared glossary terms (`glossary.yaml`), which grow during project work.
 
 A change to `scaffold/` only reaches new projects. If existing projects need it too, say so in the changelog.
 
