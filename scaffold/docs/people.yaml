@@ -1,0 +1,3 @@
+# People directory. Managed by the people skill: .ai/general/skills/people/SKILL.md
+# Active project participants only. Alphabetized by key (lastname-firstname).
+# Validate after every edit: python3 .ai/general/skills/people/validate.py docs/people.yaml

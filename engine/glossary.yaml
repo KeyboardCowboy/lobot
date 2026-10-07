@@ -1,0 +1,178 @@
+# Shared glossary: terms that mean the same thing on any Lullabot Drupal project.
+# Portable: copy with .ai/general/ to new Project Brains. Nothing project-specific here.
+# Project-specific terms go in docs/glossary.yaml; a project entry with the same key overrides this one.
+# Managed by the glossary skill: .ai/general/skills/glossary/SKILL.md
+# Validate after every edit: python3 .ai/general/skills/glossary/validate.py .ai/general/glossary.yaml
+
+block:
+  term: Block
+  aka: [Blocks, block plugin, content block, custom block]
+  means: "A unit of content or functionality placed in a theme region through Block Layout. Either a block plugin provided by code (e.g. a menu, or a Views block display) or a content block: an editor-created block_content entity (formerly 'custom block'). Projects often use 'block' loosely, so check the project glossary."
+  related: [region, entity, views]
+
+bundle:
+  term: Bundle
+  means: "A subtype of an entity type with its own set of fields. Content types are node bundles, vocabularies are taxonomy bundles, media types are media bundles, paragraph types are paragraph bundles."
+  related: [entity, content-type, field]
+
+config:
+  term: Config
+  aka: [configuration, config management, CMI, config sync]
+  means: "Drupal site configuration (content types, fields, views, settings) exported as YAML to the repo and imported on deploy (drush cim / drush deploy). Distinct from content, which lives only in the database and isn't deployed with code."
+  related: [drush]
+
+content-type:
+  term: Content type
+  aka: [node type]
+  means: "A node bundle, such as Article or Basic page, defining the fields and settings for one kind of content."
+  related: [node, bundle, field]
+
+contrib:
+  term: Contrib
+  aka: [contributed module, contrib module]
+  means: "Modules and themes contributed to drupal.org by the community and installed with Composer. Contrasted with core (ships with Drupal) and custom (written for the project, in web/modules/custom or web/themes/custom)."
+  related: [core, patch]
+
+core:
+  term: Core
+  aka: [Drupal core]
+  means: "The base Drupal software and the modules that ship with it. Not the same as Drupal CMS."
+  related: [contrib, drupal-cms]
+
+ddev:
+  term: DDEV
+  means: "Docker-based local development environment tool; the standard way to run a Drupal project locally (ddev start, ddev drush ...)."
+
+display-mode:
+  term: Display mode
+  aka: [view mode, form mode, display, teaser, full]
+  means: "A named way to render (view mode, e.g. Full, Teaser) or edit (form mode) an entity, each with its own field configuration. 'Display' alone usually means a view mode's field settings, or one display within a view."
+  related: [entity, field, views]
+
+drainpipe:
+  term: Drainpipe
+  means: "Lullabot's open-source Composer package that adds Taskfile-based build, test, and deploy commands (task ...) and CI templates to Drupal projects."
+  related: [ddev]
+
+drupal-canvas:
+  term: Drupal Canvas
+  expands: formerly Experience Builder
+  aka: [Experience Builder, XB, Canvas]
+  means: "Drupal's newer visual page-building tool, renamed from Experience Builder (XB) in 2025. Distinct from Layout Builder and from Paragraphs-based page building."
+  related: [layout-builder, paragraphs, sdc]
+
+drupal-cms:
+  term: Drupal CMS
+  aka: [Starshot]
+  means: "A packaged Drupal product built on core plus recipes and preconfigured features, aimed at site builders (developed under the name Starshot). Not a synonym for Drupal or Drupal core."
+  related: [core, recipe]
+
+drush:
+  term: Drush
+  means: "Drupal's command-line tool for tasks such as clearing caches (drush cr), importing/exporting config (drush cim/cex), running updates, and deploying (drush deploy)."
+  related: [config]
+
+entity:
+  term: Entity
+  aka: [entities, entity type]
+  means: "Drupal's base unit of stored data. Entity types include node, taxonomy term, media, user, paragraph, and block_content; each can have bundles and fields."
+  related: [bundle, field, node]
+
+field:
+  term: Field
+  aka: [fields, field storage, field instance]
+  means: "A piece of data attached to an entity bundle (e.g. field_image). Field storage defines the data type and is shared across bundles; the field instance holds per-bundle settings."
+  related: [entity, bundle, display-mode]
+
+hook:
+  term: Hook
+  aka: [hooks, hook_*]
+  means: "A named extension point where a module's function or class method runs to alter or react to Drupal behavior (e.g. hook_form_alter, hook_preprocess_*, update hooks)."
+
+layout-builder:
+  term: Layout Builder
+  means: "Drupal core module for drag-and-drop layouts made of sections and blocks, per content type or per individual node. Distinct from Paragraphs and Drupal Canvas."
+  related: [block, paragraphs, drupal-canvas]
+
+media:
+  term: Media
+  aka: [media entity, media type, media library]
+  means: "Drupal's entity type for reusable assets (images, documents, video, remote video). Content usually references a media entity rather than a raw file, and editors pick it from the Media Library."
+  related: [entity, bundle]
+
+multidev:
+  term: Multidev
+  means: "A Pantheon feature that creates an extra, full environment (code, database, files) for a branch, used for review and QA before merging."
+  related: [tugboat]
+
+node:
+  term: Node
+  aka: [nodes, content item, piece of content]
+  means: "A content item, i.e. an entity of type node, such as one article or one page. 'Content' in Drupal's admin UI usually means nodes."
+  related: [content-type, entity]
+
+paragraphs:
+  term: Paragraphs
+  aka: [paragraph, paragraph type, paragraph item]
+  means: "Contrib module for building content from stacked, structured components (paragraph types), each with its own fields. 'A paragraph' means one such component instance, not a block of text."
+  related: [bundle, layout-builder, sdc]
+
+patch:
+  term: Patch
+  aka: [patches, composer patch]
+  means: "A code change applied to core or a contrib module at install time via cweagans/composer-patches (listed in composer.json or a patches file), typically pending an upstream fix."
+  related: [contrib, core]
+
+recipe:
+  term: Recipe
+  aka: [recipes, Drupal recipe]
+  means: "A reusable package that installs modules and applies config to a site (Drupal 10.3+). Applied once rather than installed like a module, so it can't be uninstalled."
+  related: [config, drupal-cms]
+
+refinement:
+  term: Refinement
+  aka: [backlog refinement, grooming, backlog grooming]
+  means: "Recurring Agile meeting where the team and stakeholders clarify, split, and estimate upcoming tickets so they're ready for a sprint."
+  related: [spike]
+
+region:
+  term: Region
+  aka: [regions, theme region]
+  means: "A named area of a theme's page layout (e.g. header, content, sidebar, footer) where blocks are placed."
+  related: [block]
+
+sdc:
+  term: SDC
+  expands: Single Directory Components
+  aka: [single directory component, component]
+  means: "Drupal core's component system: each UI component keeps its Twig template, CSS, JS, and schema (component.yml) in one directory within a theme or module."
+  related: [paragraphs, drupal-canvas]
+
+spike:
+  term: Spike
+  aka: [research spike, spike ticket]
+  means: "A time-boxed ticket to research or prototype in order to reduce uncertainty. Its output is knowledge (a recommendation or estimate), not production code."
+  related: [refinement]
+
+taxonomy:
+  term: Taxonomy
+  aka: [term, terms, vocabulary, vocabularies, tag, tags]
+  means: "Drupal's categorization system. A vocabulary (e.g. Tags, Topics) holds terms, and content references terms through fields."
+  related: [entity, bundle]
+
+tugboat:
+  term: Tugboat
+  aka: [Tugboat preview, preview environment]
+  means: "Service that builds a full, disposable preview site for each pull request, used for review and QA."
+  related: [multidev]
+
+views:
+  term: Views
+  aka: [View, Drupal Views]
+  means: "Drupal core's system for building filtered, sorted listings of content, output as pages, blocks, feeds, and more. 'A view' means one configured listing, not the general word."
+  related: [block, display-mode]
+
+webform:
+  term: Webform
+  aka: [webforms]
+  means: "Contrib module for building forms (contact, signup, surveys) and managing their submissions. Separate from Drupal's Form API, which developers use in code."

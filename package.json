@@ -1,0 +1,24 @@
+{
+  "name": "lobot",
+  "version": "0.1.0",
+  "description": "Lullabot's shared system for running a project with an AI assistant: rules, skills, agents, and record formats, installed into a Project Brain.",
+  "bin": {
+    "lobot": "tools/lobot.js"
+  },
+  "files": [
+    "tools/",
+    "engine/",
+    "scaffold/",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KeyboardCowboy/lobot.git"
+  },
+  "scripts": {
+    "test": "node tools/lobot.js --version"
+  }
+}

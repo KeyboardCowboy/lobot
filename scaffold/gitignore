@@ -1,0 +1,11 @@
+# Code repo is its own git repository
+/repo/
+# Machine-specific symlink to the shared Google Drive folder
+/drive
+# Local tool state
+.DS_Store
+.claude/settings.local.json
+# Local secrets (per-PM tokens). Never commit. See .env.example
+.env
+.env.*
+!.env.example

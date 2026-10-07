@@ -1,0 +1,5 @@
+# Decision log: project decisions, made and pending. Ordered by ID (D-001, D-002, ...); IDs are never reused.
+# Managed by the decision-log skill: .ai/general/skills/decision-log/SKILL.md
+# Decisions about how the Project Brain itself is run go in the journal, not here.
+# Validate after every edit: python3 .ai/general/skills/decision-log/validate.py docs/decisions.yaml
+# What's waiting on approval: add --pending

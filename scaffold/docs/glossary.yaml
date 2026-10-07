@@ -1,0 +1,5 @@
+# Project glossary: terms with a meaning specific to THIS project. Alphabetized by key.
+# Common Drupal/Lullabot/Agile terms live in the shared glossary: .ai/general/glossary.yaml
+# A key here that also exists in the shared glossary overrides it for this project.
+# Managed by the glossary skill: .ai/general/skills/glossary/SKILL.md
+# Validate after every edit: python3 .ai/general/skills/glossary/validate.py docs/glossary.yaml
