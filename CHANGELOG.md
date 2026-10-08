@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.3.0](https://github.com/Lullabot/lobot/compare/v0.2.0...v0.3.0) (2026-10-08)
+
+### ⚠ BREAKING CHANGES
+
+* **engine:** Lucy's project settings move from .ai/project/agents/lucille/
+to .ai/project/agents/lucy/. After updating, the assistant lists the steps and
+makes them with your approval (npx --yes github:Lullabot/lobot migrate). The
+update removes the old agent from .claude/agents/ itself.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012mpBMPzP4HsC8vSDXv9MPS
+
+### Added
+
+* **engine:** rename the librarian to Lucy and give her a full personality profile ([e52feb0](https://github.com/Lullabot/lobot/commit/e52feb000feb2fa65ec86b01c3a0819c8595e2ae))
+* **tool:** make the project-side steps of a breaking change for you ([6943ed8](https://github.com/Lullabot/lobot/commit/6943ed84fe7d4a54faf505cd3d08e872f984ef24))
+* **tool:** show what's new after an update ([9e95987](https://github.com/Lullabot/lobot/commit/9e959870c38fb09588d2a78d3eb4ce70c6a69615))
+
+### Fixed
+
+* **tool:** remove agents Lobot no longer ships from .claude/agents ([373572b](https://github.com/Lullabot/lobot/commit/373572bee1297abf2d80dc1ccebadce980de12e5))
+
 ## [0.2.0](https://github.com/Lullabot/lobot/compare/v0.1.0...v0.2.0) (2026-10-08)
 
 ### Added
