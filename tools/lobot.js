@@ -348,6 +348,24 @@ function isAgentDefinition(rel) {
   return /^agents\/[^/]+\.md$/.test(rel);
 }
 
+/**
+ * Copies in .claude/agents/ of agents Lobot installed earlier and has since dropped.
+ * `remove` are unchanged copies an update deletes; `edited` were changed in the project and are left alone.
+ */
+function staleAgents(project, stamp) {
+  const result = { remove: [], edited: [] };
+  if (!stamp) return result;
+  const engine = manifest(ENGINE);
+  for (const rel of Object.keys(stamp.files).sort()) {
+    if (!isAgentDefinition(rel) || rel in engine) continue;
+    const copy = '.claude/agents/' + rel.slice('agents/'.length);
+    const file = path.join(project, copy);
+    if (!fs.existsSync(file)) continue;
+    (sha(file) === stamp.files[rel] ? result.remove : result.edited).push(copy);
+  }
+  return result;
+}
+
 function copyAgents(project) {
   const src = path.join(ENGINE, 'agents');
   const copied = [];
@@ -360,6 +378,12 @@ function copyAgents(project) {
     copied.push('.claude/agents/' + rel);
   }
   return copied;
+}
+
+function printEditedAgents(edited) {
+  if (!edited.length) return;
+  console.log('Agents Lobot no longer ships, left in place because they were edited here; delete them if unused:');
+  for (const rel of edited) console.log('  ' + rel);
 }
 
 function lstat(p) {
@@ -563,13 +587,16 @@ function cmdStatus(project) {
     printChanges(changes);
   }
   const { write, remove } = planUpdate(project);
-  if (write.length || remove.length) {
+  const stale = harnesses.includes('claude') ? staleAgents(project, stamp) : { remove: [], edited: [] };
+  if (write.length || remove.length || stale.remove.length) {
     console.log('An update would:');
     for (const rel of write) console.log('  write    .ai/general/' + rel);
     for (const rel of remove) console.log('  delete   .ai/general/' + rel);
+    for (const rel of stale.remove) console.log('  delete   ' + rel);
   } else {
     console.log('An update would change nothing in .ai/general/.');
   }
+  printEditedAgents(stale.edited);
   const links = linkSkills(project, harnesses, true);
   if (links.linked.length || links.removed.length || links.conflicts.length) {
     console.log('Skill discovery (' + harnesses.join(', ') + '): out of date. "link" or "update" would fix:');
@@ -601,12 +628,15 @@ function cmdUpdate(project, opts) {
   }
   const { write, remove } = planUpdate(project);
   const before = installedBaseline(project, stamp);
+  const stale = harnesses.includes('claude') ? staleAgents(project, stamp) : { remove: [], edited: [] };
   if (opts.dryRun) {
     console.log('Dry run. Updating to Lobot ' + VERSION + ' would:');
     for (const rel of write) console.log('  write    .ai/general/' + rel);
     for (const rel of remove) console.log('  delete   .ai/general/' + rel);
+    for (const rel of stale.remove) console.log('  delete   ' + rel);
     if (!write.length && !remove.length) console.log('  change nothing in .ai/general/');
     console.log('  refresh agent definitions and skill links, and record the version');
+    printEditedAgents(stale.edited);
     printWhatsNew(installedBaseline(project, stamp), stamp && stamp.lobot_version, 'Updating brings');
     return;
   }
@@ -630,21 +660,33 @@ function cmdUpdate(project, opts) {
       dir = path.dirname(dir);
     }
   }
+  const removedAgents = [];
+  for (const rel of stale.remove) {
+    try {
+      fs.unlinkSync(path.join(project, rel));
+      removedAgents.push(rel);
+    } catch (e) {
+      failed.push(rel);
+    }
+  }
   const agents = harnesses.includes('claude') ? copyAgents(project) : [];
   const links = linkSkills(project, harnesses, false);
   writeStamp(project, harnesses);
   console.log('Updated ' + project + ': Lobot ' + (stamp ? stamp.lobot_version : 'unversioned') + ' -> ' + VERSION);
   for (const rel of write) console.log('  wrote    .ai/general/' + rel);
   for (const rel of remove) if (!failed.includes(rel)) console.log('  deleted  .ai/general/' + rel);
+  for (const rel of removedAgents) console.log('  deleted  ' + rel);
   for (const rel of agents) console.log('  wrote    ' + rel);
   printLinks(links, false);
-  if (!write.length && !remove.length && !agents.length && !links.linked.length) console.log('  nothing needed changing');
+  const changed = write.length || remove.length || removedAgents.length || agents.length || links.linked.length;
+  if (!changed) console.log('  nothing needed changing');
   if (failed.length) {
     console.log('Could not delete these files Lobot no longer ships; delete them by hand:');
-    for (const rel of failed) console.log('  .ai/general/' + rel);
+    for (const rel of failed) console.log('  ' + (rel.startsWith('.claude/') ? rel : '.ai/general/' + rel));
   }
+  printEditedAgents(stale.edited);
   const reported = printWhatsNew(before, stamp && stamp.lobot_version, 'What\'s new in');
-  if (!reported && !write.length && !remove.length && !agents.length && !links.linked.length) return;
+  if (!reported && !changed) return;
   console.log('');
   console.log('Next: review the changes and commit them in the Project Brain ("Update Lobot to ' + VERSION + '").');
   console.log('Then start a new assistant session. A session that is already open keeps the old rules,');
