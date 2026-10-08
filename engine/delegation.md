@@ -6,13 +6,14 @@ How the assistant hands work to the Project Brain's named agents. Everything abo
 
 | Agent | Owns | Does not touch |
 |---|---|---|
-| `lucy` (librarian) | Transcripts and meeting notes, people directory, RACI, glossary, decision log, risk tracker, journal. | GitHub, Todoist, email, calendar, anything outside the Project Brain. |
+| `lucy` (librarian) | Transcripts and meeting notes, people directory, RACI, glossary, decision log, risk tracker, journal. | GitHub, Jira, Todoist, email, calendar, anything outside the Project Brain. |
+| `pepper` (process wrangler) | Tickets in GitHub and Jira: writing and rewriting them, types, labels, links, workflow states, boards and sprints, comment drafts, pull request paperwork, board reports and hygiene audits. | Code and code review, merging, branches, repository and workflow settings, Project Brain records, Todoist, email. |
 
 More agents get added to this table as they are created.
 
 ## Routing
 
-Work that falls in an agent's column "Owns" goes to that agent. Work that matches no agent is done by the assistant directly. When a task spans two agents, split it and sequence the pieces (see below).
+Work that falls in an agent's column "Owns" goes to that agent. Work that matches no agent is done by the assistant directly. When a task spans two agents, split it and sequence the pieces (see below). For example, after a meeting Lucy files the notes first, then Pepper drafts tickets for the action items the PM wants tracked.
 
 ## Rules
 

@@ -24,6 +24,7 @@ Things the assistant knows how to do. You can ask for them by name, but usually 
 | **PM voice** | Learns how you write, so status updates, client email, and tickets it drafts for you sound like you. |
 | **ADR** | Writes up architecture decisions and hands them to the technical lead for review in the code repository. |
 | **GitHub** | Reads and updates issues, pull requests, and project boards, and reports on sprint status. |
+| **Tickets** | Writes and organizes tickets to a shared standard: clear titles, testable acceptance criteria, sensible labels and links, and comments that get answers. |
 | **Lobot** | Checks which version of Lobot your project has, updates it, and helps send improvements back. |
 
 ### Agents
@@ -31,6 +32,7 @@ Things the assistant knows how to do. You can ask for them by name, but usually 
 Helpers the assistant hands work to.
 
 - **Lucy, the librarian.** Takes the material you hand her (transcripts, notes, documents) and files it: meeting notes, the people directory, the glossary, the decision log, the risk list, and the journal. She works only inside the Project Brain and never touches GitHub, email, or other outside systems. Like a new hire, she starts out checking with you and earns more independence as you correct and promote her.
+- **Pepper, the process wrangler.** Keeps your GitHub and Jira tickets in order: writes and tidies tickets, keeps labels, links, and statuses honest, drafts comments, and tells you what's stale, unowned, or unclear on the board. She speaks fluent developer but never reviews code, and every change she'd make waits for your approval until you promote her.
 
 ### Ground rules
 
