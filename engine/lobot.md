@@ -15,6 +15,7 @@ This file is the same in every Project Brain. It is part of Lobot (`.ai/general/
 | `.ai/` | Instructions for the assistant: rules and skills. | PM + assistant |
 | `.ai/general/` | Lobot: how the assistant operates as a PM assistant on **any** project. A copy of the Lobot engine at the version in `.ai/general/.lobot-version`. Must contain nothing project-specific. | Lobot (see "Changing Lobot") |
 | `.ai/general/lobot.md` | This file: directory map, start-of-session routine, working rules. | Lobot |
+| `.ai/general/personality.md` | How the assistant (Lobot) sounds when talking to the PM: tone, proactiveness, humor, adjustable settings. Applies to conversation only, never to records or drafts in the PM's voice. | Lobot |
 | `.ai/general/glossary.yaml` | Shared glossary: Drupal, Lullabot tooling, and Agile terms that mean the same on any project. | Lobot |
 | `.ai/general/research/` | Reference research behind the skills (e.g. industry criteria for ADRs, decision logs, risk registers, RACI). Suggestions in it are not rules until a PM adopts them. | Lobot |
 | `.ai/general/context-docs.md` | How to write and organize context docs (progressive disclosure, frontmatter, generated files). | Lobot |
@@ -26,6 +27,7 @@ This file is the same in every Project Brain. It is part of Lobot (`.ai/general/
 | `.ai/project/` | How the assistant helps on **this** project only (project conventions, client norms, workflows). | PM + assistant |
 | `.ai/project/github.md` | The project's repo, GitHub Project boards, field and option IDs (used by the github skill). | PM + assistant |
 | `.ai/project/adr.md` | The project's ADR setup: ADR directory, base branch, branch naming, technical lead (used by the adr skill). | PM + assistant |
+| `.ai/project/voice/` | One voice profile per PM (`<people-key>.md`): how they write, so drafts sent under their name sound like them. See the pm-voice skill. | PM + assistant |
 | `.ai/project/task-management.md` | Where tasks go for this project (tool, project, labels) and which items become tasks. Set per PM. | PM |
 | `docs/` | Context artifacts: the material the assistant reads to do tasks (people, glossary, notes, derived summaries, journal). | Assistant, reviewed by PM |
 | `docs/overview/` | Project overview: `index.md` (read first) → topic files → `reference/` (generated detail). | Assistant, reviewed by PM |
@@ -58,6 +60,7 @@ Within `.ai/general/` and `.ai/project/`, rules live as markdown files at the to
 - **Log decisions.** Business decisions about the project (a choice between options, agreed on our watch, with a driver and an approver) go in the decision log via the decision-log skill (`.ai/general/skills/decision-log/SKILL.md`), which has the full entry test. Architecture decisions are ADRs in the code repo, never log entries: use the adr skill (`.ai/general/skills/adr/SKILL.md`), which asks the developer first and goes through a draft pull request the technical lead merges. Check the log before reopening a question. Approval is never inferred from silence.
 - **GitHub through `gh`.** Use the github skill (`.ai/general/skills/github/SKILL.md`) for issues, PRs, and project boards. Reads are free; anything visible to the team or client needs PM approval.
 - **Journal as you go, close every session.** Log completed tasks and decisions with the journal skill during the session, and run its close mode at the end of every session.
+- **Write as the PM.** Anything the PM will send or publish as themselves is drafted in their voice with the pm-voice skill (`.ai/general/skills/pm-voice/SKILL.md`), never in the assistant's personality. Learned voice changes are proposed, not applied, until the PM approves.
 - **Source vs. derived.** Files in `drive` and `repo` are sources; never modify them for PM work (the one exception is an ADR pull request via the adr skill). Anything the assistant produces from them (summaries, extracts, analyses) goes in `docs/`, with a note of which source it came from.
 - **One fact, one home.** People go in `docs/people.yaml`, terms in `docs/glossary.yaml`, project decisions in `docs/decisions.yaml`. Other files reference them rather than duplicating.
 - **No secrets.** Never copy credentials, keys, or personal data beyond work contact info into this directory.
