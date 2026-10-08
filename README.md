@@ -87,6 +87,24 @@ node tools/lobot.js status /tmp/lobot-test
 
 Projects get whatever is on `main` the next time they run `update`, so `main` should always be in a working state.
 
+### Improve Lobot while working on a project
+
+Connect your Lobot checkout to the same assistant session as the project. General changes are made in the checkout's `engine/`, applied to the project locally to try them, and pushed when they hold up:
+
+1. Edit the file under `engine/`.
+2. Apply the checkout to the project: `node tools/lobot.js update /path/to/project`.
+3. Keep working in the project and see whether the change holds up.
+4. Commit here with a conventional message and push. The release runs on its own.
+5. Pull the release commit, run the update once more so the project records the new version, and commit the project.
+
+In Claude Cowork, connect this folder alongside the project's and add this to the project instructions:
+
+```
+The Lobot source is also connected (the folder named lobot). Make changes meant for every project there, in engine/, following its CLAUDE.md, then apply them to this project with its local tools/lobot.js. That repository is public: never put client names, people, or project details in it.
+```
+
+`CLAUDE.md` in this repository holds the rules for changing Lobot.
+
 ### Versions are automatic
 
 Every push to `main` runs [semantic-release](https://semantic-release.gitbook.io/) (`.github/workflows/release.yml`, `.releaserc.json`). It reads the commit messages since the last release, picks the next version, updates `package.json` and `CHANGELOG.md`, tags the commit `vX.Y.Z`, and publishes a GitHub release. Never edit the version or the changelog by hand.
