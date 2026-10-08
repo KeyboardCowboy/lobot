@@ -33,7 +33,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # The release tools are fetched here, not listed in package.json, so that
-        # `npx github:KeyboardCowboy/lobot` stays dependency-free and fast.
+        # `npx github:Lullabot/lobot` stays dependency-free and fast.
         # Keep the conventionalcommits preset at 9: version 10 fails with semantic-release 25.
         run: >
           npx --yes

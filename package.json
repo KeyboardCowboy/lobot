@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/KeyboardCowboy/lobot.git"
+    "url": "git+https://github.com/Lullabot/lobot.git"
   },
   "scripts": {
     "test": "node tools/lobot.js --version"

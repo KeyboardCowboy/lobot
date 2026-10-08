@@ -46,7 +46,7 @@ Claude Code reads `CLAUDE.md` automatically when you start it in this directory,
 
 Notes:
 - `repo/CLAUDE.md` holds developer-focused instructions. Claude Code loads it only when working on files inside `repo/`.
-- Skills live in `.ai/general/skills/` and `.ai/project/skills/`. Lobot links each one into `.claude/skills/`, so Claude Code discovers them on its own and offers them as slash commands (`/journal`, `/people`, ...). After adding a project skill, ask the assistant to link it, or run `npx --yes github:KeyboardCowboy/lobot link`.
+- Skills live in `.ai/general/skills/` and `.ai/project/skills/`. Lobot links each one into `.claude/skills/`, so Claude Code discovers them on its own and offers them as slash commands (`/journal`, `/people`, ...). After adding a project skill, ask the assistant to link it, or run `npx --yes github:Lullabot/lobot link`.
 
 #### Claude Cowork (desktop app)
 
@@ -74,7 +74,7 @@ The files are plain markdown and YAML, so any assistant that can read a folder c
 1. Give the assistant access to this directory, or upload `CLAUDE.md`, `.ai/`, and the relevant `docs/` files.
 2. Tell it: "Read CLAUDE.md and .ai/general/lobot.md, and follow the start-of-session routine."
 3. For tools that look for `AGENTS.md` instead, symlink it: `ln -s CLAUDE.md AGENTS.md`.
-4. For tools that discover skills in `.agents/skills/` (Codex, Cursor, Gemini CLI, OpenCode), add that harness: `npx --yes github:KeyboardCowboy/lobot link --harnesses claude,agents`.
+4. For tools that discover skills in `.agents/skills/` (Codex, Cursor, Gemini CLI, OpenCode), add that harness: `npx --yes github:Lullabot/lobot link --harnesses claude,agents`.
 
 ## Handing off the project
 
@@ -88,10 +88,10 @@ When a PM leaves or joins:
 
 `.ai/general/` is a copy of Lobot, committed here so this Project Brain works on its own. The installed version is recorded in `.ai/general/.lobot-version`.
 
-- **Updating.** Tell your assistant "update Lobot". Or, from this directory, run `npx --yes github:KeyboardCowboy/lobot status` to see what would change, then `npx --yes github:KeyboardCowboy/lobot update`. Review the changes, commit them here, and start a new assistant session.
+- **Updating.** Tell your assistant "update Lobot". Or, from this directory, run `npx --yes github:Lullabot/lobot status` to see what would change, then `npx --yes github:Lullabot/lobot update`. Review the changes, commit them here, and start a new assistant session.
 - **Local changes.** The update refuses to run while `.ai/general/` holds changes that aren't in Lobot, so nothing is overwritten by accident.
 - **Contributing.** An improvement to a general rule or skill discovered here should go back to Lobot, free of project-specific details, so every project gets it. Ask your assistant to prepare it.
 
-Always use the full name `github:KeyboardCowboy/lobot`. An unrelated package is published on npm as plain `lobot`.
+Always use the full name `github:Lullabot/lobot`. An unrelated package is published on npm as plain `lobot`.
 
 Requires Node 18 or later.

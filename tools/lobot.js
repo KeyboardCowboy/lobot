@@ -13,7 +13,7 @@ const ENGINE = path.join(ROOT, 'engine');
 const SCAFFOLD = path.join(ROOT, 'scaffold');
 const VERSION = require(path.join(ROOT, 'package.json')).version;
 // How people run this tool. Change it here and in the docs if Lobot moves.
-const RUN = 'npx github:KeyboardCowboy/lobot';
+const RUN = 'npx github:Lullabot/lobot';
 const STAMP = '.lobot-version';
 const TEXT_EXT = new Set(['.md', '.yaml', '.yml']);
 // npm drops files named .gitignore from packages, so the scaffold stores it without the dot.

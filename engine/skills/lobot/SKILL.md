@@ -17,12 +17,12 @@ description: Check, update, and contribute to Lobot, the shared system in .ai/ge
 | Installed version, and the checksums used to spot local changes | `.ai/general/.lobot-version` |
 | Skill links assistants discover | `.claude/skills/`, and `.agents/skills/` when that harness is set up |
 | Agent definitions Claude discovers | `.claude/agents/` (copies of `.ai/general/agents/`) |
-| Lobot's source | https://github.com/KeyboardCowboy/lobot |
+| Lobot's source | https://github.com/Lullabot/lobot |
 
 All commands run from the Project Brain root and need Node 18 or later and network access:
 
 ```sh
-npx --yes github:KeyboardCowboy/lobot status
+npx --yes github:Lullabot/lobot status
 ```
 
 Always use that full name. A different, unrelated package is published on npm as plain `lobot`; never run `npx lobot`.
@@ -40,7 +40,7 @@ Run `status`. It changes nothing and reports:
 
 1. Run `status` and show the PM the result.
 2. If it lists local changes, stop and go to "Local changes" below. Never add `--force` without the PM's explicit approval for the specific files it would overwrite.
-3. Run `npx --yes github:KeyboardCowboy/lobot update`.
+3. Run `npx --yes github:Lullabot/lobot update`.
 4. Report what it wrote, deleted, and linked. Summarize what the new version changes from Lobot's `CHANGELOG.md` if you can read it.
 5. Remind the PM to review and commit the result ("Update Lobot to x.y.z"), and that a new assistant session is needed before changed skills take effect.
 6. Log it in the journal with `#brain-kit`.
@@ -67,4 +67,4 @@ A change goes back to Lobot as an issue or pull request on its repository. Both 
 
 ## New project skills
 
-Skills for this project only live in `.ai/project/skills/<name>/SKILL.md`. After adding one, run `npx --yes github:KeyboardCowboy/lobot link` so assistants discover it. A project skill with the same name as a Lobot skill takes its place.
+Skills for this project only live in `.ai/project/skills/<name>/SKILL.md`. After adding one, run `npx --yes github:Lullabot/lobot link` so assistants discover it. A project skill with the same name as a Lobot skill takes its place.

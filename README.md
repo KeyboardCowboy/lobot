@@ -9,7 +9,7 @@ Everything is plain markdown, YAML, and small scripts, so it works with Claude C
 In an empty directory (or pass the directory after `init`):
 
 ```sh
-npx --yes github:KeyboardCowboy/lobot init --name "Example University" --key EXU
+npx --yes github:Lullabot/lobot init --name "Example University" --key EXU
 ```
 
 Then follow the next steps it prints and the `README.md` it creates.
@@ -19,15 +19,15 @@ Then follow the next steps it prints and the `README.md` it creates.
 Tell your assistant "update Lobot". Or, from the Project Brain's root:
 
 ```sh
-npx --yes github:KeyboardCowboy/lobot status    # what would change; changes nothing
-npx --yes github:KeyboardCowboy/lobot update
+npx --yes github:Lullabot/lobot status    # what would change; changes nothing
+npx --yes github:Lullabot/lobot update
 ```
 
 Each run downloads the current Lobot, so there is nothing to clone or pull. Review the result, commit it in the Project Brain ("Update Lobot to x.y.z"), and start a new assistant session.
 
 The update only touches `.ai/general/`, `.claude/agents/`, and the skill links. It refuses to run when `.ai/general/` has changes that aren't in Lobot, and lists them, so nothing is overwritten by accident.
 
-Always use the full name `github:KeyboardCowboy/lobot`. An unrelated package is published on npm as plain `lobot`.
+Always use the full name `github:Lullabot/lobot`. An unrelated package is published on npm as plain `lobot`.
 
 ## How skills are discovered
 
