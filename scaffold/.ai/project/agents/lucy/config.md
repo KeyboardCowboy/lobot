@@ -1,6 +1,6 @@
-# Lucille: project config ({{PROJECT_KEY}})
+# Lucy: project config ({{PROJECT_KEY}})
 
-Project-specific settings for Lucille (`.ai/general/agents/lucille.md`).
+Project-specific settings for Lucy (`.ai/general/agents/lucy.md`).
 
 ## Autonomy
 
@@ -16,4 +16,4 @@ Promote an area by moving it to Autonomous. Promote when the PM has had a run of
 
 ## Notes
 
-- Lucille only reads what she is handed. The PM, or the assistant on the PM's behalf, gives her the task and the files.
+- Lucy only reads what she is handed. The PM, or the assistant on the PM's behalf, gives her the task and the files.

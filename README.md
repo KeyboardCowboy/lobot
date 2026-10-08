@@ -30,7 +30,7 @@ Things the assistant knows how to do. You can ask for them by name, but usually 
 
 Helpers the assistant hands work to.
 
-- **Lucille, the librarian.** Takes the material you hand her (transcripts, notes, documents) and files it: meeting notes, the people directory, the glossary, the decision log, the risk list, and the journal. She works only inside the Project Brain and never touches GitHub, email, or other outside systems. Like a new hire, she starts out checking with you and earns more independence as you correct and promote her.
+- **Lucy, the librarian.** Takes the material you hand her (transcripts, notes, documents) and files it: meeting notes, the people directory, the glossary, the decision log, the risk list, and the journal. She works only inside the Project Brain and never touches GitHub, email, or other outside systems. Like a new hire, she starts out checking with you and earns more independence as you correct and promote her.
 
 ### Ground rules
 
@@ -49,7 +49,7 @@ The assistant also has a personality: calm, direct, and to the point when it tal
 
 Open your assistant in the Project Brain folder and talk to it the way you would talk to a project coordinator. At the start of each session it reads the rules, catches up on the latest journal entry, and tells you where things stand.
 
-**After a client call.** Drop the transcript into the Project Brain and say "process today's meeting with the client." Lucille writes the meeting notes. The assistant then shows you the action items, any decisions that should be logged, and anything that looks like a risk, and waits for your approval before adding them.
+**After a client call.** Drop the transcript into the Project Brain and say "process today's meeting with the client." Lucy writes the meeting notes. The assistant then shows you the action items, any decisions that should be logged, and anything that looks like a risk, and waits for your approval before adding them.
 
 **Before a status update.** Ask "what did we decide about the launch date, and what's still waiting on approval?" The assistant answers from the decision log. Then ask it to "draft this week's status update for the client," and it writes one in your voice for you to edit and send.
 
@@ -105,7 +105,7 @@ A Project Brain set up before Lobot has an `.ai/general/` with no version record
 1. Compare the files `status` lists with `engine/` in this repository, and contribute anything worth keeping first.
 2. Run `update --force`. From then on the version is recorded and updates work normally.
 3. Trim the project's `CLAUDE.md` to the short form in `scaffold/CLAUDE.md`, keeping the project-specific rows.
-4. Move `.ai/project/lucille.md` to `.ai/project/agents/lucille/config.md` and `.ai/project/lucille-corrections.md` to `.ai/project/agents/lucille/corrections.md`. Delete the old `.ai/general/lucille-personality.md` and `.ai/general/lucille-corrections.md`; the update leaves them because it only deletes files it installed.
+4. Move `.ai/project/lucille.md` to `.ai/project/agents/lucy/config.md` and `.ai/project/lucille-corrections.md` to `.ai/project/agents/lucy/corrections.md`. Delete the old `.ai/general/lucille-personality.md` and `.ai/general/lucille-corrections.md`; the update leaves them because it only deletes files it installed.
 
 ## Contributing to Lobot
 

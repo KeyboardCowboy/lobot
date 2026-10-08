@@ -87,7 +87,7 @@ The update prints a "What's new in Lobot" section: new, updated, and removed ski
 
 ## Local changes
 
-Local changes are edits, additions, or deletions in `.ai/general/` that Lobot doesn't have: a skill fix, a new general rule, a general Lucille correction, a shared glossary term.
+Local changes are edits, additions, or deletions in `.ai/general/` that Lobot doesn't have: a skill fix, a new general rule, a general Lucy correction, a shared glossary term.
 
 For each one, show the PM the difference and ask which applies:
 

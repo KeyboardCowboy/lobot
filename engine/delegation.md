@@ -6,7 +6,7 @@ How the assistant hands work to the Project Brain's named agents. Everything abo
 
 | Agent | Owns | Does not touch |
 |---|---|---|
-| `lucille` (librarian) | Transcripts and meeting notes, people directory, RACI, glossary, decision log, risk tracker, journal. | GitHub, Todoist, email, calendar, anything outside the Project Brain. |
+| `lucy` (librarian) | Transcripts and meeting notes, people directory, RACI, glossary, decision log, risk tracker, journal. | GitHub, Todoist, email, calendar, anything outside the Project Brain. |
 
 More agents get added to this table as they are created.
 

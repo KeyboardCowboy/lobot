@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "id": "lucille-to-lucy",
+    "why": "The librarian agent was renamed from Lucille to Lucy, so her project settings move to match.",
+    "steps": [
+      { "move": ".ai/project/agents/lucille", "to": ".ai/project/agents/lucy" },
+      { "replace": ".ai/project/agents/lucy/config.md", "from": "agents/lucille", "to": "agents/lucy" },
+      { "replace": ".ai/project/agents/lucy/config.md", "from": "Lucille", "to": "Lucy" },
+      { "replace": ".ai/project/agents/lucy/corrections.md", "from": "agents/lucille", "to": "agents/lucy" },
+      { "replace": ".ai/project/agents/lucy/corrections.md", "from": "Lucille", "to": "Lucy" }
+    ]
+  }
+]

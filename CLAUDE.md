@@ -54,4 +54,4 @@ node tools/lobot.js update /path/to/project
 
 ## Changes that start in a project
 
-When this repository is connected to a session alongside a project, make general changes here in `engine/`, then apply them to the project with the command above. If a general change was made in the project's `.ai/general/` instead (Lucille's general corrections log is the usual case), copy it here, strip anything project-specific, and commit it; the project's next update then finds nothing to overwrite.
+When this repository is connected to a session alongside a project, make general changes here in `engine/`, then apply them to the project with the command above. If a general change was made in the project's `.ai/general/` instead (Lucy's general corrections log is the usual case), copy it here, strip anything project-specific, and commit it; the project's next update then finds nothing to overwrite.

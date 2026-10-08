@@ -20,7 +20,7 @@ This file is the same in every Project Brain. It is part of Lobot (`.ai/general/
 | `.ai/general/research/` | Reference research behind the skills (e.g. industry criteria for ADRs, decision logs, risk registers, RACI). Suggestions in it are not rules until a PM adopts them. | Lobot |
 | `.ai/general/context-docs.md` | How to write and organize context docs (progressive disclosure, frontmatter, generated files). | Lobot |
 | `.ai/general/delegation.md` | Roster of named agents and the rules for handing work to them (routing, briefs, approvals, sequencing). | Lobot |
-| `.ai/general/agents/` | Named agents. `<name>.md` is the agent's definition, which Lobot copies to `.claude/agents/`, where Claude looks for it. `<name>/` holds its supporting files, e.g. Lucille the librarian's personality and general corrections log. | Lobot |
+| `.ai/general/agents/` | Named agents. `<name>.md` is the agent's definition, which Lobot copies to `.claude/agents/`, where Claude looks for it. `<name>/` holds its supporting files, e.g. Lucy the librarian's personality and general corrections log. | Lobot |
 | `.ai/project/agents/<name>/` | An agent's settings for this project: `config.md` (autonomy levels, sources) and `corrections.md` (project corrections log). | PM |
 | `.claude/skills/`, `.agents/skills/` | Links to every skill in `.ai/general/skills/` and `.ai/project/skills/`, so assistants that discover skills on their own find them. Made by Lobot; the skills themselves live in `.ai/`. | Lobot |
 | `.ai/general/scripts/` | Helper scripts that work on any project (e.g. `drupal_config_inventory.py`). | Lobot |
@@ -70,7 +70,7 @@ Within `.ai/general/` and `.ai/project/`, rules live as markdown files at the to
 
 `.ai/general/` is a copy of the Lobot engine. The next Lobot update replaces it, and refuses to run while it holds changes that haven't gone back to Lobot.
 
-- A change made here (a skill fix, a new general rule, a general Lucille correction, a shared glossary term) is committed in the Project Brain as usual, then proposed to the Lobot repository as a pull request so every project gets it. Tell the PM when a session leaves `.ai/general/` changed.
+- A change made here (a skill fix, a new general rule, a general Lucy correction, a shared glossary term) is committed in the Project Brain as usual, then proposed to the Lobot repository as a pull request so every project gets it. Tell the PM when a session leaves `.ai/general/` changed.
 - Never put project names or details in `.ai/general/`.
 - Checking the version, updating, and sending a change back are all handled by the lobot skill (`.ai/general/skills/lobot/SKILL.md`). The PM can simply say "update Lobot".
 
