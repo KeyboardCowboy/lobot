@@ -86,6 +86,8 @@ npx --yes github:Lullabot/lobot update
 
 Each run downloads the latest Lobot, so there is nothing to clone or pull. Both commands list what's new since your version: new and updated skills and agents, and the release notes. When the assistant runs the update, it turns that into a short report of what you can now do.
 
+Now and then a version also needs a change in your project's own files, such as a renamed folder. The update lists those steps, and the assistant asks for your approval before making them with `npx --yes github:Lullabot/lobot migrate`.
+
 Review the changes, commit them in the Project Brain ("Update Lobot to x.y.z"), and start a new assistant session. A session that is already open keeps working from the old version.
 
 An update only touches Lobot's own files (`.ai/general/`, `.claude/agents/`, and the skill links). If you've edited Lobot's files in your project, it stops and lists them instead of overwriting your work.

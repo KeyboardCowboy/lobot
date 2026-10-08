@@ -21,6 +21,8 @@ const RENAME = { gitignore: '.gitignore' };
 // Where each kind of assistant looks for skills inside a project.
 const SKILL_DIRS = { claude: '.claude/skills', agents: '.agents/skills' };
 const SKILL_SOURCES = ['.ai/general/skills', '.ai/project/skills'];
+// Steps a breaking change needs in a project's own files, outside what update touches.
+const MIGRATIONS = path.join(__dirname, 'migrations.json');
 
 function usage() {
   return [
@@ -31,6 +33,7 @@ function usage() {
     '  ' + RUN + ' status [dir]',
     '  ' + RUN + ' update [dir] [--dry-run] [--force] [--harnesses claude,agents]',
     '  ' + RUN + ' link [dir] [--harnesses claude,agents]',
+    '  ' + RUN + ' migrate [dir] [--dry-run]',
     '',
     'init    New Project Brain: copies Lobot to .ai/general/, adds starting files',
     '        (existing files are kept), and makes the skills discoverable.',
@@ -40,6 +43,9 @@ function usage() {
     '        run when .ai/general/ has local changes, so they can go back to Lobot first.',
     'link    Makes skills in .ai/general/skills/ and .ai/project/skills/ discoverable.',
     '        Run it after adding a project skill.',
+    'migrate Applies the steps a breaking change needs in the project\'s own files (moving',
+    '        or renaming a folder, updating a name). status and update list them first.',
+    '        Run it after update, once the PM has approved the steps.',
     '',
     '--harnesses  Which assistants to set up: claude (.claude/skills, .claude/agents)',
     '             and/or agents (.agents/skills: Codex, Cursor, Gemini CLI, OpenCode).',
@@ -380,6 +386,119 @@ function copyAgents(project) {
   return copied;
 }
 
+/**
+ * Migrations: steps in tools/migrations.json that a breaking change needs in the project's own
+ * files. Each step checks the files on disk instead of a version, so a project that skipped
+ * releases still gets them, and a step that is already done is skipped.
+ *   { "move": "<path>", "to": "<path>" }                 move a file or folder
+ *   { "replace": "<file>", "from": "<text>", "to": "<text>" }   replace text in a file
+ *   { "delete": "<file>" }                               delete a file
+ */
+function loadMigrations() {
+  let list;
+  try {
+    list = JSON.parse(fs.readFileSync(MIGRATIONS, 'utf8'));
+  } catch (e) {
+    fail(MIGRATIONS + ' is missing or not valid JSON.');
+  }
+  const safe = (rel) => {
+    if (typeof rel !== 'string' || !rel || path.isAbsolute(rel)) return false;
+    const norm = path.posix.normalize(rel);
+    return norm === rel && !norm.startsWith('..') && !/^(\.git|\.ai\/general)(\/|$)/.test(norm);
+  };
+  for (const m of list) {
+    for (const step of m.steps) {
+      const paths = 'move' in step ? [step.move, step.to] : 'replace' in step ? [step.replace] : [step.delete];
+      if (!paths.every(safe)) fail('migration ' + m.id + ' has a step outside the project\'s own files: ' + JSON.stringify(step));
+    }
+  }
+  return list;
+}
+
+/** Each step that still applies to this project: { id, why, step, state: 'ready' | 'blocked', text, reason }. */
+function pendingMigrations(project) {
+  const out = [];
+  const at = (rel) => path.join(project, rel);
+  for (const m of loadMigrations()) {
+    for (const step of m.steps) {
+      let item = null;
+      if ('move' in step) {
+        if (!fs.existsSync(at(step.move))) continue;
+        item = { text: 'move     ' + step.move + ' -> ' + step.to };
+        if (fs.existsSync(at(step.to))) item.reason = step.to + ' already exists; merge them by hand';
+      } else if ('replace' in step) {
+        // A replace may target a file an earlier move in the same migration is about to create.
+        const pendingMove = out.find((p) => p.id === m.id && 'move' in p.step && step.replace.startsWith(p.step.to + '/'));
+        const file = pendingMove ? at(pendingMove.step.move + step.replace.slice(pendingMove.step.to.length)) : at(step.replace);
+        if (!fs.existsSync(file) || !fs.readFileSync(file, 'utf8').includes(step.from)) continue;
+        item = { text: 'replace  "' + step.from + '" with "' + step.to + '" in ' + step.replace };
+        if (pendingMove && pendingMove.state === 'blocked') item.reason = 'waits on the move above';
+      } else {
+        if (!fs.existsSync(at(step.delete))) continue;
+        item = { text: 'delete   ' + step.delete };
+        if (!fs.statSync(at(step.delete)).isFile()) item.reason = 'it is a folder; delete it by hand';
+      }
+      out.push(Object.assign(item, { id: m.id, why: m.why, step, state: item.reason ? 'blocked' : 'ready' }));
+    }
+  }
+  return out;
+}
+
+function printMigrations(pending, heading) {
+  if (!pending.length) return false;
+  console.log('');
+  console.log(heading);
+  let last = null;
+  for (const p of pending) {
+    if (p.id !== last) console.log('  ' + p.why);
+    last = p.id;
+    console.log('    ' + p.text + (p.reason ? '  (blocked: ' + p.reason + ')' : ''));
+  }
+  return true;
+}
+
+function cmdMigrate(project, opts) {
+  requireBrain(project);
+  const stamp = readStamp(project);
+  if (!stamp || stamp.lobot_version !== VERSION) {
+    fail('this Project Brain has Lobot ' + (stamp ? stamp.lobot_version : 'unversioned') + '. Run update first; the steps are for Lobot ' + VERSION + '.');
+  }
+  const pending = pendingMigrations(project);
+  if (!pending.length) return console.log('No steps needed: this project\'s files are up to date.');
+  if (opts.dryRun) {
+    printMigrations(pending, 'Dry run. migrate would:');
+    return;
+  }
+  const done = [];
+  const blocked = [];
+  for (const p of pending) {
+    if (p.state === 'blocked') {
+      blocked.push(p);
+      continue;
+    }
+    const step = p.step;
+    try {
+      if ('move' in step) {
+        fs.mkdirSync(path.dirname(path.join(project, step.to)), { recursive: true });
+        fs.renameSync(path.join(project, step.move), path.join(project, step.to));
+      } else if ('replace' in step) {
+        const file = path.join(project, step.replace);
+        fs.writeFileSync(file, fs.readFileSync(file, 'utf8').split(step.from).join(step.to));
+      } else {
+        fs.unlinkSync(path.join(project, step.delete));
+      }
+      done.push(p);
+    } catch (e) {
+      blocked.push(Object.assign(p, { reason: e.message }));
+    }
+  }
+  console.log(done.length ? 'Migrated ' + project + ':' : 'Nothing could be applied automatically.');
+  for (const p of done) console.log('  ' + p.text);
+  if (blocked.length) printMigrations(blocked, 'Not done; do these by hand:');
+  console.log('');
+  console.log('Next: review the changes and commit them in the Project Brain.');
+}
+
 function printEditedAgents(edited) {
   if (!edited.length) return;
   console.log('Agents Lobot no longer ships, left in place because they were edited here; delete them if unused:');
@@ -605,6 +724,7 @@ function cmdStatus(project) {
     console.log('Skill discovery (' + harnesses.join(', ') + '): up to date.');
   }
   printWhatsNew(installedBaseline(project, stamp), stamp && stamp.lobot_version, 'Updating brings');
+  printMigrations(pendingMigrations(project), 'Steps for this project\'s own files (run "migrate" after updating, once approved):');
 }
 
 function cmdUpdate(project, opts) {
@@ -638,6 +758,7 @@ function cmdUpdate(project, opts) {
     console.log('  refresh agent definitions and skill links, and record the version');
     printEditedAgents(stale.edited);
     printWhatsNew(installedBaseline(project, stamp), stamp && stamp.lobot_version, 'Updating brings');
+    printMigrations(pendingMigrations(project), 'Steps for this project\'s own files (run "migrate" after updating, once approved):');
     return;
   }
   copyEngine(project, write);
@@ -686,9 +807,11 @@ function cmdUpdate(project, opts) {
   }
   printEditedAgents(stale.edited);
   const reported = printWhatsNew(before, stamp && stamp.lobot_version, 'What\'s new in');
-  if (!reported && !changed) return;
+  const steps = printMigrations(pendingMigrations(project), 'Steps this version needs in the project\'s own files (with the PM\'s approval, run "migrate"):');
+  if (!reported && !changed && !steps) return;
   console.log('');
-  console.log('Next: review the changes and commit them in the Project Brain ("Update Lobot to ' + VERSION + '").');
+  if (steps) console.log('Next: once the PM approves the steps above, run "' + RUN + ' migrate".');
+  console.log((steps ? 'Then ' : 'Next: ') + 'review the changes and commit them in the Project Brain ("Update Lobot to ' + VERSION + '").');
   console.log('Then start a new assistant session. A session that is already open keeps the old rules,');
   console.log('and may not see new skills or agents, until it is restarted.');
 }
@@ -733,6 +856,7 @@ function main() {
   if (command === 'status') return cmdStatus(project);
   if (command === 'update') return cmdUpdate(project, opts);
   if (command === 'link') return cmdLink(project, opts);
+  if (command === 'migrate') return cmdMigrate(project, opts);
   console.log(usage());
   process.exit(command ? 1 : 0);
 }

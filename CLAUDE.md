@@ -13,6 +13,7 @@ Never put a client's name, people, project details, internal URLs, or credential
 | `engine/` | Every project, on its next update, as `.ai/general/` | Must work on any project. Paths written inside these files are the installed ones (`.ai/general/...`, `docs/...`), never `engine/...`. |
 | `scaffold/` | New projects only, once | Existing projects never receive changes here. If they need one, say in the commit body what they have to do by hand. `{{PROJECT_NAME}}`, `{{PROJECT_KEY}}`, and `{{DATE}}` are filled in on install. `gitignore` has no dot because npm drops `.gitignore`; the tool restores it. |
 | `tools/lobot.js` | Runs through `npx`; not copied into projects | No dependencies. |
+| `tools/migrations.json` | Read by the tool's `status`, `update`, and `migrate` | Steps a breaking change needs in a project's own files (see "Breaking" below). |
 | Everything else | Nobody | Repository docs, release config, this file. |
 
 ## Rules
@@ -30,7 +31,7 @@ Every push to `main` is released automatically from its commit messages, so the 
 
 - **Scope** says what changed: `engine`, `scaffold`, or `tool`. A commit with one of these scopes always releases at least a patch. Leave the scope off for changes nothing receives (this file, the README, CI).
 - **Type:** `feat` for something new (minor), `fix` for a correction (patch), `docs` or `refactor` for rewording and restructuring (patch when scoped), `ci` and `test` for the pipeline.
-- **Breaking:** add `!` after the scope (`feat(engine)!: ...`) when existing projects must change something to keep working, and say what in the body.
+- **Breaking:** add `!` after the scope (`feat(engine)!: ...`) when existing projects must change something to keep working, and say what in the body. If the change is a move, a text replacement, or a deletion in the project's own files (`.ai/project/`, `.claude/`, `docs/`), also add it to `tools/migrations.json` in the same commit, so the assistant can make it with the PM's approval. Each step must be safe to run twice and must check the files rather than the version. Test it with `status`, `migrate --dry-run`, and `migrate` on a project installed from the previous version.
 - **Write the summary for a PM.** It becomes the release note that projects show their PM in the "What's new" report on update. Say what they can now do or what changed for them.
 - One logical change per commit. Reference an issue with `Closes #12` in the body.
 
