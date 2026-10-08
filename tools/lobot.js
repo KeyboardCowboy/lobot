@@ -34,10 +34,10 @@ function usage() {
     '',
     'init    New Project Brain: copies Lobot to .ai/general/, adds starting files',
     '        (existing files are kept), and makes the skills discoverable.',
-    'status  Shows the installed version, local changes to .ai/general/, and what an',
-    '        update would change. Changes nothing.',
-    'update  Replaces .ai/general/ with this version. Refuses to run when .ai/general/',
-    '        has local changes, so they can go back to Lobot first.',
+    'status  Shows the installed version, local changes to .ai/general/, what an update',
+    '        would change, and what is new since the installed version. Changes nothing.',
+    'update  Replaces .ai/general/ with this version and reports what is new. Refuses to',
+    '        run when .ai/general/ has local changes, so they can go back to Lobot first.',
     'link    Makes skills in .ai/general/skills/ and .ai/project/skills/ discoverable.',
     '        Run it after adding a project skill.',
     '',
@@ -169,6 +169,169 @@ function planUpdate(project) {
   // Only delete files Lobot itself installed earlier and has since dropped.
   const remove = stamp ? Object.keys(stamp.files).sort().filter((rel) => !(rel in engine) && rel in current) : [];
   return { write, remove };
+}
+
+/** "1.10.0" > "1.9.2". Returns <0, 0, or >0. */
+function compareVersions(a, b) {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) - (pb[i] || 0);
+  return 0;
+}
+
+/** The first sentence of a skill's or agent's frontmatter description, or '' without one. */
+function describe(file) {
+  let text;
+  try {
+    text = fs.readFileSync(file, 'utf8');
+  } catch (e) {
+    return '';
+  }
+  const match = text.match(/^---\n[\s\S]*?^description:\s*(.+)$/m);
+  if (!match) return '';
+  const sentence = match[1].trim().match(/^.*?[.!?](?=\s|$)/);
+  return sentence ? sentence[0] : match[1].trim();
+}
+
+/** Which part of Lobot an engine file belongs to: a skill, an agent, a rule file, or something else. */
+function classify(rel) {
+  const parts = rel.split('/');
+  if (parts[0] === 'skills' && parts.length > 2) return { kind: 'skill', name: parts[1] };
+  if (parts[0] === 'agents' && parts.length === 2 && rel.endsWith('.md')) return { kind: 'agent', name: parts[1].slice(0, -3) };
+  if (parts[0] === 'agents' && parts.length > 2) return { kind: 'agent', name: parts[1] };
+  if (parts.length === 1 && rel.endsWith('.md')) return { kind: 'rule', name: rel };
+  return { kind: 'other', name: rel };
+}
+
+/**
+ * Compare what the project has installed (baseline: path -> sha) with this engine,
+ * grouped the way a PM thinks about it. A skill or agent counts as new or removed
+ * when its definition file is; otherwise any changed file in it makes it updated.
+ */
+function whatsNew(baseline, engine) {
+  const groups = { skill: {}, agent: {}, rule: {}, other: {} };
+  const all = new Set(Object.keys(baseline).concat(Object.keys(engine)));
+  for (const rel of all) {
+    if (baseline[rel] === engine[rel]) continue;
+    const { kind, name } = classify(rel);
+    groups[kind][name] = !(rel in baseline) ? 'new' : !(rel in engine) ? 'removed' : 'updated';
+  }
+  // A skill or agent spans several files: settle it by its definition file, so a file
+  // added to an existing skill makes it updated, not new.
+  const definition = { skill: (n) => 'skills/' + n + '/SKILL.md', agent: (n) => 'agents/' + n + '.md' };
+  for (const kind of ['skill', 'agent']) {
+    for (const name of Object.keys(groups[kind])) {
+      const def = definition[kind](name);
+      groups[kind][name] = !(def in baseline) && def in engine ? 'new' : def in baseline && !(def in engine) ? 'removed' : 'updated';
+    }
+  }
+  return groups;
+}
+
+/**
+ * Release notes from CHANGELOG.md for every version after `from` up to this one (just
+ * this one when `from` is unknown), keeping only entries that reach projects (scoped
+ * to engine, scaffold, or tool).
+ * Returns [{ version, sections: [{ title, items }] }], newest first.
+ */
+function releaseNotes(from) {
+  let text;
+  try {
+    text = fs.readFileSync(path.join(ROOT, 'CHANGELOG.md'), 'utf8');
+  } catch (e) {
+    return [];
+  }
+  const releases = [];
+  let release = null;
+  let section = null;
+  for (const line of text.split('\n')) {
+    const heading = line.match(/^## \[?(\d+\.\d+\.\d+)\]?/);
+    if (heading) {
+      const v = heading[1];
+      release = from ? compareVersions(v, VERSION) <= 0 && compareVersions(v, from) > 0 : v === VERSION ? { version: v, sections: [] } : null;
+      if (release) releases.push(release);
+      section = null;
+      continue;
+    }
+    if (!release) continue;
+    const sub = line.match(/^### (.+)/);
+    if (sub) {
+      section = { title: sub[1].replace(/⚠\s*/, '').trim(), items: [] };
+      release.sections.push(section);
+      continue;
+    }
+    // Only scoped entries reach projects; "Maintenance" is the release's own bookkeeping.
+    const item = line.match(/^[*-] (\*\*.+)/);
+    if (!item || (section && section.title === 'Maintenance')) continue;
+    if (!section) {
+      section = { title: 'Changes', items: [] };
+      release.sections.push(section);
+    }
+    const clean = item[1]
+      .replace(/\(\[([0-9a-f]{7})[0-9a-f]*\]\([^)]*\)\)/g, '($1)') // ([0c87552...](url)) -> (0c87552)
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1') // [text](url) -> text
+      .replace(/\*\*([^*]+):\*\*/, '$1:');
+    section.items.push(clean);
+  }
+  for (const r of releases) r.sections = r.sections.filter((s) => s.items.length);
+  return releases;
+}
+
+/** What the project has before an update: the installed manifest, or its files when no version was recorded. */
+function installedBaseline(project, stamp) {
+  return stamp ? stamp.files : manifest(generalDir(project));
+}
+
+/**
+ * Print what updating from the installed copy to this version brings: new, updated, and
+ * removed skills, agents, rules, and other files, then the release notes in between.
+ * `baseline` is what the project had (path -> sha) and `from` its version, or null.
+ * Returns false when there is nothing to report.
+ */
+function printWhatsNew(baseline, from, heading) {
+  const engine = manifest(ENGINE);
+  const groups = whatsNew(baseline, engine);
+  const notes = releaseNotes(from);
+  const any = Object.keys(groups).some((k) => Object.keys(groups[k]).length) || notes.length;
+  if (!any) return false;
+
+  console.log('');
+  console.log(heading + ' Lobot ' + VERSION + (from ? ' (from ' + from + ')' : ' (no earlier version recorded)'));
+  const named = (kind, status) => Object.keys(groups[kind]).sort().filter((n) => groups[kind][n] === status);
+  const describeIn = { skill: (n) => path.join(ENGINE, 'skills', n, 'SKILL.md'), agent: (n) => path.join(ENGINE, 'agents', n + '.md') };
+  const blocks = [
+    ['New skills', named('skill', 'new'), 'skill'],
+    ['New agents', named('agent', 'new'), 'agent'],
+    ['Updated skills', named('skill', 'updated')],
+    ['Updated agents', named('agent', 'updated')],
+    ['Removed skills', named('skill', 'removed')],
+    ['Removed agents', named('agent', 'removed')],
+  ];
+  for (const [title, names, kind] of blocks) {
+    if (!names.length) continue;
+    console.log(title + ':');
+    for (const n of names) {
+      const about = kind ? describe(describeIn[kind](n)) : '';
+      console.log('  ' + n + (about ? ' - ' + about : ''));
+    }
+  }
+  for (const [kind, title] of [['rule', 'Rules and guides'], ['other', 'Other files']]) {
+    const names = Object.keys(groups[kind]).sort();
+    if (!names.length) continue;
+    console.log(title + ':');
+    for (const n of names) console.log('  ' + (groups[kind][n] + '        ').slice(0, 9) + n);
+  }
+  if (notes.length) {
+    console.log('Release notes:');
+    for (const r of notes) {
+      console.log('  ' + r.version);
+      for (const s of r.sections) {
+        console.log('    ' + s.title);
+        for (const item of s.items) console.log('      - ' + item);
+      }
+    }
+  }
+  return true;
 }
 
 function copyFile(from, to) {
@@ -414,6 +577,7 @@ function cmdStatus(project) {
   } else {
     console.log('Skill discovery (' + harnesses.join(', ') + '): up to date.');
   }
+  printWhatsNew(installedBaseline(project, stamp), stamp && stamp.lobot_version, 'Updating brings');
 }
 
 function cmdUpdate(project, opts) {
@@ -436,12 +600,14 @@ function cmdUpdate(project, opts) {
     process.exit(1);
   }
   const { write, remove } = planUpdate(project);
+  const before = installedBaseline(project, stamp);
   if (opts.dryRun) {
     console.log('Dry run. Updating to Lobot ' + VERSION + ' would:');
     for (const rel of write) console.log('  write    .ai/general/' + rel);
     for (const rel of remove) console.log('  delete   .ai/general/' + rel);
     if (!write.length && !remove.length) console.log('  change nothing in .ai/general/');
     console.log('  refresh agent definitions and skill links, and record the version');
+    printWhatsNew(installedBaseline(project, stamp), stamp && stamp.lobot_version, 'Updating brings');
     return;
   }
   copyEngine(project, write);
@@ -477,7 +643,12 @@ function cmdUpdate(project, opts) {
     console.log('Could not delete these files Lobot no longer ships; delete them by hand:');
     for (const rel of failed) console.log('  .ai/general/' + rel);
   }
-  console.log('Review the changes, commit them in the Project Brain, and start a new assistant session.');
+  const reported = printWhatsNew(before, stamp && stamp.lobot_version, 'What\'s new in');
+  if (!reported && !write.length && !remove.length && !agents.length && !links.linked.length) return;
+  console.log('');
+  console.log('Next: review the changes and commit them in the Project Brain ("Update Lobot to ' + VERSION + '").');
+  console.log('Then start a new assistant session. A session that is already open keeps the old rules,');
+  console.log('and may not see new skills or agents, until it is restarted.');
 }
 
 function cmdLink(project, opts) {

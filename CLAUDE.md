@@ -31,6 +31,7 @@ Every push to `main` is released automatically from its commit messages, so the 
 - **Scope** says what changed: `engine`, `scaffold`, or `tool`. A commit with one of these scopes always releases at least a patch. Leave the scope off for changes nothing receives (this file, the README, CI).
 - **Type:** `feat` for something new (minor), `fix` for a correction (patch), `docs` or `refactor` for rewording and restructuring (patch when scoped), `ci` and `test` for the pipeline.
 - **Breaking:** add `!` after the scope (`feat(engine)!: ...`) when existing projects must change something to keep working, and say what in the body.
+- **Write the summary for a PM.** It becomes the release note that projects show their PM in the "What's new" report on update. Say what they can now do or what changed for them.
 - One logical change per commit. Reference an issue with `Closes #12` in the body.
 
 Propose the commit message; the maintainer commits and pushes unless they ask you to. The release adds its own commit to `main`, so make sure the checkout is up to date before editing.

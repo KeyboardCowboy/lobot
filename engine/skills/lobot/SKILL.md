@@ -34,18 +34,46 @@ Run `status`. It changes nothing and reports:
 - the installed version and the version just downloaded (the latest);
 - local changes in `.ai/general/` that Lobot doesn't have;
 - what an update would write or delete;
-- whether skill links are current.
+- whether skill links are current;
+- "Updating brings": what the new version would add, change, or remove, and the release notes since the installed version.
 
 ## Update
 
-1. Run `status` and show the PM the result.
-2. If it lists local changes, stop and go to "Local changes" below. Never add `--force` without the PM's explicit approval for the specific files it would overwrite.
-3. Run `npx --yes github:Lullabot/lobot update`.
-4. Report what it wrote, deleted, and linked. Summarize what the new version changes from Lobot's `CHANGELOG.md` if you can read it.
-5. Remind the PM to review and commit the result ("Update Lobot to x.y.z"), and that a new assistant session is needed before changed skills take effect.
-6. Log it in the journal with `#brain-kit`.
+1. Run `status`. If it lists local changes, stop and go to "Local changes" below. Never add `--force` without the PM's explicit approval for the specific files it would overwrite.
+2. Otherwise, tell the PM in a line or two what the update brings, and run `npx --yes github:Lullabot/lobot update`.
+3. Give the PM the "What's new" report (below). If the update listed files it could not delete, add them for the PM to delete by hand.
+4. Log it in the journal with `#brain-kit`: the version change and the new skills and agents.
 
-The update only touches `.ai/general/`, `.claude/agents/`, and the skill links. If it reports files it could not delete, list them for the PM to delete by hand.
+The update only touches `.ai/general/`, `.claude/agents/`, and the skill links.
+
+## What's new report
+
+The update prints a "What's new in Lobot" section: new, updated, and removed skills and agents (with each new one's description), changed rules and other files, and the release notes for every version since the one installed. Turn it into a short report so the PM can see at a glance what they can now do. Write it for a PM, not a developer.
+
+```markdown
+**Lobot is updated to 0.3.0** (from 0.2.0)
+
+**New skills**
+- **Risk tracker**: keeps the project's risk list and flags risks that come up in meetings. Try: "add a risk: the client's API docs are late."
+
+**New agents**
+- **Scout**: one line on what you can hand them, and what they won't touch.
+
+**Improvements**
+- Meeting notes now flag possible risks for the tracker.
+
+**Worth knowing**
+- Anything the PM has to do, anything removed, and changes that only reach new projects.
+
+**Next:** review and commit the update ("Update Lobot to 0.3.0"), then start a new session so I'm working from the new version.
+```
+
+- **Leave out empty sections.** If nothing changed for the PM, say so in one line.
+- **New skills and agents.** One line each on what it does for the PM, plus a "Try:" with a prompt they could say. Read the new skill's or agent's file for the prompt; don't invent abilities it doesn't have.
+- **Improvements.** Use the release notes to say what changed in updated skills, agents, and rules. Group small changes. Skip internal changes (wording, the tool's own fixes) unless they change what the PM sees.
+- **Worth knowing.** Put breaking changes (the release notes' "BREAKING CHANGES" section) first, with what the PM has to do. Also list removed skills or agents, and `scaffold:` entries: those only reach new projects, so look up the commit (its hash is in the release notes) for any step this project needs to take by hand.
+- **Always end with the new session.** The rules (`CLAUDE.md`, `lobot.md`, and the rest of `.ai/`) are read when a session starts, so the current session keeps the old ones. Some tools also only pick up new skills and agents at the start of a session.
+- **Stick to the report.** Every line comes from the update's output or the files it names. No file paths unless the PM has to act on one. Keep it to one screen.
 
 ## Local changes
 
