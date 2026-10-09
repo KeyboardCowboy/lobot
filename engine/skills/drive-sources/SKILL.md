@@ -131,10 +131,10 @@ not_used:
 Run this when a project is set up, when `docs/sources.yaml` has no `shared_drive`, when the PM asks to map or tidy the drive, or when the standard layout has items the project hasn't accounted for (not in `sources` and not in `not_used`). The goal is a complete map that matches the standard layout.
 
 1. **Ask before scanning.** Never scan the drive without the PM's go-ahead. Lucy offers once, briefly: what she'll look at (the top level of the shared drive, names and types only, nothing inside the files) and what she'll come back with. If the PM hasn't given the shared drive's link, ask for it.
-2. **If the PM says yes, scan the top level** of the shared drive, or of each scope's root. Search for files whose parent is the root's ID, metadata only (no content snippets), following page tokens until the list is complete. Shared drives are usually small; if the top level has more than about 50 items, report the count and ask which folders to look in. Look one level deeper only into a folder the PM points to, or one whose name matches a layout item's `look_for`.
-3. **Match it against `layout.yaml`.** For each standard item not yet in `sources` or `not_used`, compare names, case-insensitively, against its `name` and `look_for`, and check that the kind matches (folder or file). Then report back in three short lists:
+2. **If the PM says yes, scan the top level** of the shared drive, or of each scope's root. Search for files whose parent is the root's ID, metadata only (no content snippets), following page tokens until the list is complete. Shared drives are usually small; if the top level has more than about 50 items, report the count and ask which folders to look in. Look one level deeper only into a folder the PM points to, or one that matches a layout folder other items name as their `parent` (e.g. Project Management), or whose name matches a layout item's `look_for`.
+3. **Match it against `layout.yaml`.** For each standard item not yet in `sources` or `not_used`, compare names, case-insensitively, against its `name` and `look_for`, and check that the kind matches (folder or file). An item with a `parent` is expected there (`root` is the top level); a match somewhere else is still a match, but say where it is. Then report back in three short lists:
    - **Likely matches to confirm:** "Is *Meet Recordings* the meeting-transcripts folder?"
-   - **Missing:** standard items with no match. For each, offer to create it in the shared drive with the layout's `name` (a folder, or a blank Doc or Sheet per `file_type`), to record where it actually lives if it's elsewhere, or to mark it not used.
+   - **Missing:** standard items with no match. For each, offer to create it with the layout's `name` (a folder, or a blank Doc or Sheet per `file_type`) in its `parent` (at the root for `root`, inside the parent folder otherwise, creating that first if it's missing too; at the root when there is no `parent`), to record where it actually lives if it's elsewhere, or to mark it not used.
    - **Unrecognized:** top-level items that match nothing. Ask whether any should be mapped, and what each is for.
 4. **If the PM says no to the scan, ask instead.** List the standard items not yet accounted for, with each one's `why`, and ask where each lives (a link), whether it should be created, or whether the project doesn't use it. Record what the PM answers; ask about the rest another time rather than repeating the whole list.
 5. **Record the answers.** Lucy writes the entries (keys and fields from `layout.yaml`, plus `added`, with `@<scope>` when the project has scopes), the `shared_drive` link (or each scope's) if it's new, and any `not_used` reasons, then runs the validator. For a transcript folder, ask which date to start from (`since`).
@@ -171,6 +171,26 @@ Only after the PM says which files to process.
 4. **Skipped files:** when the PM says to skip a file, record it with `result: "skipped: <reason>"` so it stops coming up.
 
 For `reference` and `deliverable` sources, read the file when a task needs it and cite it by title and link. Record a `processed` entry when the PM has reviewed a change, so the next check reports only newer edits.
+
+## Mirror a Sheet locally
+
+Until the assistant can edit Sheets, a deliverable Sheet that tracks work (the kickoff checklist) gets a local mirror at its `record` path. The assistant keeps the mirror current as work happens; the PM copies the changes into the Sheet. With scopes, each scope gets its own mirror: add `-<scope>` before the extension (`docs/kickoff-checklist-site-a.md`).
+
+1. **Create the mirror.** Read the Sheet and copy the tracking tab into a Markdown table, with this frontmatter:
+   ```yaml
+   ---
+   drive_url: https://docs.google.com/spreadsheets/d/1QrS.../edit
+   title: "Kickoff tasks: Project name"
+   tab: "New Project Checklist"
+   modified: "2026-10-09T19:43:26Z"   # Sheet modifiedTime when last synced
+   synced: 2026-10-09
+   ---
+   ```
+   Columns: `Row | Task | Status | Notes`. `Row` is the Sheet's row number, so the PM can find it. Copy each task word for word, using the Sheet's own status values. Copy only the tracking tab; read reference tabs (agendas, examples) in Drive when needed.
+2. **Update it as work happens.** Change a row's Status and add a short note with the evidence (a file, a meeting, a link). Never reword, add, or remove tasks; those are the PM's edits in the Sheet. A task the PM rules out gets the status `Not applicable` until the PM deletes it from the Sheet.
+3. **Hand changes back.** When asked, or when rows have changed since `synced`, list each change as `Row 9: Not started → Done (note)` for the PM to apply.
+4. **Resync.** When the PM says the Sheet is updated, or the check shows it changed, read it again and rewrite the mirror from it. The Sheet wins; a row the mirror changed that the Sheet doesn't reflect yet is listed as a question, not overwritten silently. Update `modified` and `synced`, and record a `processed` entry for the Sheet.
+5. **Retire it** once the assistant can edit Sheets: from then on, changes go straight into the Sheet with the PM's approval, and the mirror is deleted.
 
 ## Add or change a source
 
