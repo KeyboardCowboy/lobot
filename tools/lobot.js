@@ -254,7 +254,8 @@ function releaseNotes(from) {
     const heading = line.match(/^## \[?(\d+\.\d+\.\d+)\]?/);
     if (heading) {
       const v = heading[1];
-      release = from ? compareVersions(v, VERSION) <= 0 && compareVersions(v, from) > 0 : v === VERSION ? { version: v, sections: [] } : null;
+      const wanted = from ? compareVersions(v, VERSION) <= 0 && compareVersions(v, from) > 0 : v === VERSION;
+      release = wanted ? { version: v, sections: [] } : null;
       if (release) releases.push(release);
       section = null;
       continue;
