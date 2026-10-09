@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/Lullabot/lobot/compare/v0.3.0...v0.4.0) (2026-10-09)
+
+### Added
+
+* **engine:** keep a RACI matrix of who is responsible, accountable, consulted, and informed for each area of work ([e65efe0](https://github.com/Lullabot/lobot/commit/e65efe0ff54314faf1e06cff1306e7e72c7b7c40)), closes [#3](https://github.com/Lullabot/lobot/issues/3)
+* **engine:** read meeting transcripts and project documents straight from the shared Google Drive ([a4f1bec](https://github.com/Lullabot/lobot/commit/a4f1bec7b596d13d86c6ab0fea816dde56d680d7)), closes [#4](https://github.com/Lullabot/lobot/issues/4)
+
 ## [0.3.0](https://github.com/Lullabot/lobot/compare/v0.2.0...v0.3.0) (2026-10-08)
 
 ### ⚠ BREAKING CHANGES
