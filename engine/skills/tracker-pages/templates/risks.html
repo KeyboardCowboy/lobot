@@ -1,0 +1,245 @@
+<!-- Lobot tracker page template: risks. Fill the {{…}} placeholders and CONFIG, then publish with capabilities {"db": {}, "user": {}}. See .ai/general/skills/tracker-pages/SKILL.md. -->
+<title>{{PROJECT_NAME}} Risk Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one working column; summary, then the "waiting for Claude" panel, then risks (open first, by severity), then an add form. */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#1d2430; --muted:#5d6878; --line:#dde1e8;
+  --accent:#1f5f8b; --accent-soft:#e3eef6;
+  --crit:#b3261e; --crit-bg:#fbe4e1;
+  --warn:#9a5b00; --warn-bg:#fdf0db;
+  --calm:#1d7a46; --calm-bg:#e1f3e8;
+  --na:#6b7585; --na-bg:#eef0f3;
+  --sync:#a33a2b; --sync-bg:#fbe6e2;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161c; --surface:#1a2028; --fg:#e4e8ee; --muted:#9aa4b2; --line:#2c3440;
+  --accent:#7cb4dc; --accent-soft:#1c2c3a;
+  --crit:#f28b82; --crit-bg:#3b1e1c; --warn:#f0b45a; --warn-bg:#33281a;
+  --calm:#6fcf97; --calm-bg:#183025; --na:#a3acb9; --na-bg:#242b35;
+  --sync:#f08b7a; --sync-bg:#3a201c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161c; --surface:#1a2028; --fg:#e4e8ee; --muted:#9aa4b2; --line:#2c3440;
+  --accent:#7cb4dc; --accent-soft:#1c2c3a;
+  --crit:#f28b82; --crit-bg:#3b1e1c; --warn:#f0b45a; --warn-bg:#33281a;
+  --calm:#6fcf97; --calm-bg:#183025; --na:#a3acb9; --na-bg:#242b35;
+  --sync:#f08b7a; --sync-bg:#3a201c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45;padding:0 16px}
+.wrap{max-width:860px;margin:0 auto;padding-block:28px 48px;display:grid;gap:22px}
+header{display:grid;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-size:26px;line-height:1.2;margin:0;text-wrap:balance}
+h2{font-size:15px;margin:0}
+.sub{color:var(--muted);margin:0}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tally{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tally .lbl{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;min-width:5.5em}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.v-high{color:var(--crit);background:var(--crit-bg)} .v-medium{color:var(--warn);background:var(--warn-bg)}
+.v-low{color:var(--calm);background:var(--calm-bg)} .v-tbd{color:var(--na);background:var(--na-bg)}
+.st{color:var(--accent);background:var(--accent-soft)} .st-closed{color:var(--na);background:var(--na-bg)}
+.s-sync{color:var(--sync);background:var(--sync-bg)}
+section.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.qrow{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding-top:10px;border-top:1px solid var(--line)}
+.qrow .what{min-width:0;font-size:14px;display:grid;gap:2px}
+.qrow .risktext{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.change{font-weight:600;overflow-wrap:anywhere}
+.change .f{color:var(--muted);font-weight:500}
+.empty{color:var(--muted);font-size:14px;margin:0}
+.rid{font-family:var(--f-mono);font-size:13px;color:var(--muted);min-width:3.6em;font-variant-numeric:tabular-nums}
+button{font:inherit;font-size:13px;font-weight:600;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:5px 12px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button:disabled{opacity:.5;cursor:default}
+.list{display:grid;gap:10px}
+ol.risks{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+li.risk{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:14px 16px;border-top:1px solid var(--line);border-left:4px solid transparent}
+li.risk:first-child{border-top:0;border-top-left-radius:10px}
+li.risk:last-child{border-bottom-left-radius:10px}
+li.risk.sev-high{border-left-color:var(--crit)} li.risk.sev-medium{border-left-color:var(--warn)}
+li.risk.sev-low{border-left-color:var(--calm)} li.risk.sev-tbd{border-left-color:var(--na)}
+li.risk.closed .text{color:var(--muted)}
+.body{min-width:0;display:grid;gap:6px}
+.text{font-weight:500;overflow-wrap:anywhere}
+.meta{font-size:13px;color:var(--muted);display:grid;gap:2px;overflow-wrap:anywhere}
+.meta b{font-weight:600;color:var(--fg)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
+select,input[type=text],textarea{font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+input[type=text]{flex:1 1 260px;min-width:0}
+textarea{width:100%;min-height:64px;resize:vertical}
+.field{display:grid;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
+.frow{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.frow .field{flex:1 1 220px;min-width:0}
+.flag{font-size:12px}
+.foot{color:var(--muted);font-size:13px}
+.notice{background:var(--sync-bg);color:var(--sync);border-radius:8px;padding:10px 12px;font-size:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="eyebrow">Project Brain</div>
+    <h1>Risk tracker</h1>
+    <p class="sub">Working copy of the Project Brain risk list. Change a severity, status or next step here, or add a risk. Claude files the change into the Project Brain.</p>
+  </header>
+
+  <section class="panel" aria-labelledby="sh">
+    <h2 id="sh">Summary</h2>
+    <div class="tally" id="tallySev"><span class="lbl">Severity</span></div>
+    <div class="tally" id="tallyStatus"><span class="lbl">Status</span></div>
+  </section>
+
+  <div class="notice" id="notice" hidden></div>
+
+  <section class="panel" aria-labelledby="qh">
+    <h2 id="qh">Waiting for Claude to file</h2>
+    <div id="queue"><p class="empty">Loading risks…</p></div>
+  </section>
+
+  <section class="list" aria-labelledby="lh">
+    <h2 id="lh">Risks</h2>
+    <ol class="risks" id="risks"><li class="risk"><span class="rid">—</span><span class="text">Risks appear here once they load. If nothing shows, ask Claude to load them from the Project Brain.</span></li></ol>
+  </section>
+
+  <section class="panel" aria-labelledby="ah" id="addPanel">
+    <h2 id="ah">Add a risk</h2>
+    <form id="addForm" class="list">
+      <label class="field" for="newRisk">Risk
+        <textarea id="newRisk" required placeholder="What could go wrong, and what it would affect"></textarea></label>
+      <div class="frow">
+        <label class="field" for="newSev" style="flex:0 0 auto">Severity
+          <select id="newSev"></select></label>
+        <label class="field" for="newNext">Next step
+          <input type="text" id="newNext" placeholder="Who does what next"></label>
+        <button class="primary" type="submit" id="addBtn">Add risk</button>
+      </div>
+    </form>
+  </section>
+
+  <p class="foot">Changes here are filed into the Project Brain by Claude, who then clears them from the waiting list.</p>
+</div>
+
+<script>
+const CONFIG = {
+  project: "{{PROJECT_NAME}}",          // eyebrow: "<project> · Project Brain"
+  scopes: {{SCOPES_JSON}},              // {} on a single-site project, else {"site-a": "Site A", ...}
+};
+const SEVERITIES = ["High","Medium","Low","TBD"];
+const STATUSES = ["Open","Monitoring","Closed"];
+const EDITABLE = [["severity","Severity"],["status","Status"],["nextStep","Next step"]];
+const sevCls = s => "v-" + String(s || "TBD").toLowerCase();
+const stCls = s => s === "Closed" ? "st-closed" : "st";
+let risks = [], coll = null, canWrite = true;
+
+const $ = id => document.getElementById(id);
+const el = (tag, props = {}, kids = []) => { const n = document.createElement(tag); Object.assign(n, props); for (const k of [].concat(kids)) n.append(k); return n; };
+const pill = (cls, text) => el("span", {className: "pill " + cls, textContent: text});
+$("eyebrow").textContent = `${CONFIG.project} · Project Brain`;
+function notice(msg){ const n = $("notice"); n.textContent = msg || ""; n.hidden = !msg; }
+
+function changes(r){
+  if (!r.synced) return null; // new item
+  return EDITABLE.filter(([k]) => (r[k] || "") !== (r.synced[k] || "")).map(([k, label]) => ({k, label, from: r.synced[k] || "(blank)", to: r[k] || "(blank)"}));
+}
+const isPending = r => !r.synced || changes(r).length > 0;
+
+function sortKey(a, b){
+  const so = STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status);
+  if (so) return so;
+  const sv = SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity);
+  if (sv) return sv;
+  return String(a.id).localeCompare(String(b.id));
+}
+
+function render(){
+  // Summary
+  const cs = Object.fromEntries(SEVERITIES.map(s => [s, 0])), ct = Object.fromEntries(STATUSES.map(s => [s, 0]));
+  risks.forEach(r => { cs[r.severity] = (cs[r.severity] || 0) + 1; ct[r.status] = (ct[r.status] || 0) + 1; });
+  $("tallySev").replaceChildren(el("span", {className: "lbl", textContent: "Severity"}), ...SEVERITIES.map(s => pill(sevCls(s), `${cs[s]} ${s}`)));
+  const pending = risks.filter(isPending);
+  $("tallyStatus").replaceChildren(el("span", {className: "lbl", textContent: "Status"}), ...STATUSES.map(s => pill(stCls(s), `${ct[s]} ${s}`)),
+    ...(pending.length ? [pill("s-sync", `${pending.length} waiting to file`)] : []));
+
+  // Waiting panel
+  if (!risks.length) $("queue").replaceChildren(el("p", {className: "empty", textContent: "No risks loaded yet."}));
+  else if (!pending.length) $("queue").replaceChildren(el("p", {className: "empty", textContent: "Nothing waiting. The Project Brain matches this list."}));
+  else $("queue").replaceChildren(...pending.map(r => {
+    const lines = r.synced
+      ? changes(r).map(c => el("div", {className: "change"}, [el("span", {className: "f", textContent: c.label + ": "}), `${c.from} → ${c.to}`]))
+      : [el("div", {className: "change"}, [pill("s-sync flag", "New"), ` ${r.severity} · ${r.status}`])];
+    return el("div", {className: "qrow"}, [
+      el("span", {className: "rid", textContent: r.id}),
+      el("div", {className: "what"}, [el("div", {className: "risktext", textContent: r.risk}), ...lines]) ]);
+  }));
+
+  // Risk list
+  if (!risks.length) return;
+  $("risks").replaceChildren(...[...risks].sort(sortKey).map(r => {
+    const sev = el("select", {id: "sev-" + r.id, disabled: !canWrite});
+    sev.setAttribute("aria-label", `Severity for ${r.id}`);
+    SEVERITIES.forEach(s => sev.append(el("option", {value: s, textContent: s, selected: s === r.severity})));
+    sev.onchange = () => save(r, {severity: sev.value});
+    const st = el("select", {id: "status-" + r.id, disabled: !canWrite});
+    st.setAttribute("aria-label", `Status for ${r.id}`);
+    STATUSES.forEach(s => st.append(el("option", {value: s, textContent: s, selected: s === r.status})));
+    st.onchange = () => save(r, {status: st.value});
+    const next = el("input", {type: "text", id: "next-" + r.id, value: r.nextStep || "", placeholder: "Next step", disabled: !canWrite});
+    next.setAttribute("aria-label", `Next step for ${r.id}`);
+    next.onchange = () => save(r, {nextStep: next.value.trim()});
+    const head = [pill(sevCls(r.severity), r.severity), pill(stCls(r.status), r.status)];
+    if (!r.synced) head.push(pill("s-sync flag", "New"));
+    else if (changes(r).length) head.push(pill("s-sync flag", "Changed here"));
+    const meta = [];
+    if (r.source) meta.push(el("div", {}, [el("b", {textContent: "Source: "}), r.source]));
+    if (r.confirmedBy) meta.push(el("div", {}, [el("b", {textContent: "Confirmed by: "}), r.confirmedBy]));
+    return el("li", {className: `risk sev-${String(r.severity).toLowerCase()}` + (r.status === "Closed" ? " closed" : "")}, [
+      el("span", {className: "rid", textContent: r.id}),
+      el("div", {className: "body"}, [
+        el("div", {className: "tally"}, head),
+        el("div", {className: "text", textContent: r.risk}),
+        ...(meta.length ? [el("div", {className: "meta"}, meta)] : []),
+        el("div", {className: "controls"}, [sev, st, next]) ]) ]);
+  }));
+}
+
+async function save(r, patch){
+  if (!coll) return;
+  try { await coll.doc(r.id).update({...patch, updatedAt: new Date().toISOString()}); notice(""); }
+  catch (e) { notice("That change wasn't saved. You may only have view access to this page."); render(); }
+}
+
+function nextId(){
+  const n = risks.map(r => parseInt(String(r.id).replace(/^R-/, ""), 10)).filter(Number.isFinite);
+  return "R-" + String((n.length ? Math.max(...n) : 0) + 1).padStart(3, "0");
+}
+
+SEVERITIES.forEach(s => $("newSev").append(el("option", {value: s, textContent: s, selected: s === "TBD"})));
+$("addForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const text = $("newRisk").value.trim();
+  if (!text) { notice("Describe the risk before adding it."); return; }
+  if (!coll) { notice("Sign in to claude.ai to add a risk."); return; }
+  const id = nextId();
+  $("addBtn").disabled = true;
+  try {
+    await coll.doc(id).set({id, risk: text, severity: $("newSev").value, status: "Open", source: "Added on the risk tracker page", confirmedBy: "", nextStep: $("newNext").value.trim(), synced: null, createdAt: new Date().toISOString()});
+    $("newRisk").value = ""; $("newNext").value = ""; $("newSev").value = "TBD"; notice("");
+  } catch (err) { notice("The risk wasn't added. You may only have view access to this page."); }
+  $("addBtn").disabled = false;
+});
+
+(async () => {
+  const db = await window.claude?.use?.("db");
+  if (!db) { notice("This view can't load the shared risk list. Sign in to claude.ai to see and change it."); $("queue").replaceChildren(el("p", {className: "empty", textContent: "Not available in this view."})); $("addPanel").hidden = true; return; }
+  const user = await window.claude.use("user");
+  if (user) { const w = await user.can("data.write"); if (w === false) { canWrite = false; $("addPanel").hidden = true; } }
+  coll = db.collection("risks");
+  coll.orderBy("id").onSnapshot(snap => {
+    risks = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    render();
+  }, () => notice("The risk list couldn't load. Reload the page to try again."));
+})();
+</script>

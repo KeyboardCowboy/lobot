@@ -4,3 +4,4 @@ Corrections that apply to any Lullabot PM project. One line each: what was corre
 
 | Date | Correction | Why |
 |---|---|---|
+| 2026-10-09 | Proposed open, undecided questions as pending decision-log entries. A decision needs options actually chosen between; otherwise it is a risk or an open question. | Decision log entries need a real choice; unresolved items belong in the risk tracker or questions log. |

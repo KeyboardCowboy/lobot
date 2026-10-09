@@ -1,0 +1,337 @@
+<!-- Lobot tracker page template: decisions. Fill the {{…}} placeholders and CONFIG, then publish with capabilities {"db": {}, "user": {}}. See .ai/general/skills/tracker-pages/SKILL.md. -->
+<title>{{PROJECT_NAME}} Decision Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one working column; "Waiting for Claude to file" panel above the decision list, each decision keyed by its D-number. */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#1d2430; --muted:#5d6878; --line:#dde1e8;
+  --accent:#1f5f8b; --accent-soft:#e3eef6;
+  --todo:#6b7585; --todo-bg:#eef0f3;
+  --prog:#9a5b00; --prog-bg:#fdf0db;
+  --done:#1d7a46; --done-bg:#e1f3e8;
+  --na:#7b8290; --na-bg:#f0f1f3;
+  --sync:#a33a2b; --sync-bg:#fbe6e2;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161c; --surface:#1a2028; --fg:#e4e8ee; --muted:#9aa4b2; --line:#2c3440;
+  --accent:#7cb4dc; --accent-soft:#1c2c3a;
+  --todo:#a3acb9; --todo-bg:#242b35; --prog:#f0b45a; --prog-bg:#33281a;
+  --done:#6fcf97; --done-bg:#183025; --na:#8a919c; --na-bg:#222830;
+  --sync:#f08b7a; --sync-bg:#3a201c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161c; --surface:#1a2028; --fg:#e4e8ee; --muted:#9aa4b2; --line:#2c3440;
+  --accent:#7cb4dc; --accent-soft:#1c2c3a;
+  --todo:#a3acb9; --todo-bg:#242b35; --prog:#f0b45a; --prog-bg:#33281a;
+  --done:#6fcf97; --done-bg:#183025; --na:#8a919c; --na-bg:#222830;
+  --sync:#f08b7a; --sync-bg:#3a201c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45;padding:0 16px}
+.wrap{max-width:860px;margin:0 auto;padding-block:28px 48px;display:grid;gap:22px}
+header{display:grid;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-size:26px;line-height:1.2;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:0;max-width:65ch}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tally{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.s-todo{color:var(--todo);background:var(--todo-bg)} .s-prog{color:var(--prog);background:var(--prog-bg)}
+.s-done{color:var(--done);background:var(--done-bg)} .s-na{color:var(--na);background:var(--na-bg)}
+.s-sync{color:var(--sync);background:var(--sync-bg)}
+.s-denied{color:var(--sync);background:var(--na-bg)}
+section.queue,section.propose{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.queue h2,.list h2,.propose h2{font-size:15px;margin:0}
+.qrow{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding-top:10px;border-top:1px solid var(--line)}
+.qrow .what{min-width:0;font-size:14px;display:grid;gap:2px}
+.qrow .change{font-weight:600}
+.empty{color:var(--muted);font-size:14px;margin:0}
+.rowno{font-family:var(--f-mono);font-size:13px;color:var(--muted);min-width:3.6em;font-variant-numeric:tabular-nums}
+button{font:inherit;font-size:13px;font-weight:600;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:5px 12px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button:disabled{opacity:.5;cursor:default}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.list{display:grid;gap:10px}
+.lhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+ol.items{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+li.item{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:14px 16px;border-top:1px solid var(--line)}
+li.item:first-child{border-top:0}
+li.item.faded .title{color:var(--muted)}
+.body{min-width:0;display:grid;gap:6px}
+.top{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}
+.title{font-weight:600;min-width:0;flex:1 1 260px}
+.just{color:var(--fg);font-size:14px;margin:0;max-width:70ch;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted)}
+.meta b{font-weight:600;color:var(--fg)}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-family:var(--f-mono);font-size:12px;color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:1px 6px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
+.controls label{font-size:12px;color:var(--muted);font-weight:600;display:flex;gap:6px;align-items:center}
+select,input[type=text],input[type=date],textarea{font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+.controls input[type=text]{width:13em;max-width:100%}
+.flag{font-size:12px}
+.hint{font-size:12.5px;color:var(--prog)}
+.foot{color:var(--muted);font-size:13px}
+.notice{background:var(--sync-bg);color:var(--sync);border-radius:8px;padding:10px 12px;font-size:14px}
+/* Empty state */
+.emptystate{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:22px 20px;display:grid;gap:10px}
+.emptystate h3{margin:0;font-size:16px}
+.emptystate p{margin:0;color:var(--muted);font-size:14px;max-width:62ch}
+.emptystate ol{margin:0;padding-left:1.3em;font-size:14px;color:var(--fg);display:grid;gap:4px;max-width:62ch}
+.emptystate .ex{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+/* Propose form */
+.propose summary{cursor:pointer;font-weight:700;font-size:15px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.propose summary::-webkit-details-marker{display:none}
+.propose summary::after{content:"+";font-family:var(--f-mono);color:var(--accent);font-size:18px}
+.propose[open] summary::after{content:"−"}
+form{display:grid;gap:12px;margin-top:12px}
+.field{display:grid;gap:4px;min-width:0}
+.field label{font-size:13px;font-weight:600}
+.field .help{font-size:12.5px;color:var(--muted)}
+.field input,.field textarea{width:100%}
+textarea{resize:vertical;min-height:84px;line-height:1.45}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.formfoot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.formfoot .note{font-size:13px;color:var(--muted);max-width:52ch}
+@media (max-width:560px){.row2{grid-template-columns:1fr}li.item{grid-template-columns:1fr}.qrow{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="eyebrow">Project Brain</div>
+    <h1>Decision log</h1>
+    <p class="sub">Business decisions for this project: what was chosen, why, who pushed for it, and who signed off. Mirrors <span class="mono">docs/decisions.yaml</span> in the Project Brain.</p>
+    <div class="tally" id="tally"></div>
+  </header>
+
+  <div class="notice" id="notice" hidden></div>
+
+  <section class="queue" aria-labelledby="qh">
+    <h2 id="qh">Waiting for Claude to file</h2>
+    <div id="queue"><p class="empty">Loading the decision log…</p></div>
+  </section>
+
+  <section class="list" aria-labelledby="lh">
+    <div class="lhead">
+      <h2 id="lh">Decisions</h2>
+      <div class="filters" role="group" aria-label="Filter decisions">
+        <button id="f-all" data-f="all" aria-pressed="true">All</button>
+        <button id="f-pending" data-f="pending" aria-pressed="false">Pending</button>
+        <button id="f-approved" data-f="approved" aria-pressed="false">Approved</button>
+        <button id="f-closed" data-f="closed" aria-pressed="false">Denied or retired</button>
+      </div>
+    </div>
+    <div id="listbox">
+      <div class="emptystate" id="emptystate">
+        <h3>No decisions logged yet</h3>
+        <p>An entry goes in once a real choice between options has been made and someone with authority has approved it, or still has to. Statements of focus, PM tasks, inherited project facts and technical architecture don't belong here.</p>
+        <ol>
+          <li>Two or more options were on the table and one was picked.</li>
+          <li>Someone pushed for it, and someone signed off or still has to.</li>
+          <li>It changes what gets built, how it behaves, the design, the scope or a commitment.</li>
+        </ol>
+        <p>Spotted one? Use <b>Propose a decision</b> below. It's filed as <b>pending</b> until the PM confirms who approved it.</p>
+        <p class="ex">Example of the shape: "Don't use CSS hyphenation", not "Hyphenation".</p>
+      </div>
+    </div>
+  </section>
+
+  <details class="propose" id="propose">
+    <summary>Propose a decision</summary>
+    <form id="pform" novalidate>
+      <div class="field">
+        <label for="p-decision">Decision</label>
+        <span class="help" id="p-decision-help">One short line, stated as the choice. If it isn't settled yet, write the choice to be made ("Decide whether…").</span>
+        <input type="text" id="p-decision" aria-describedby="p-decision-help" maxlength="200" required>
+      </div>
+      <div class="field">
+        <label for="p-just">Options considered and justification</label>
+        <span class="help" id="p-just-help">What the options were, why this one, and where it came from (meeting, ticket, message).</span>
+        <textarea id="p-just" aria-describedby="p-just-help" maxlength="1500" required></textarea>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="p-driver">Driver</label>
+          <span class="help">Who is pushing for it, not who reported it.</span>
+          <input type="text" id="p-driver" maxlength="80" required>
+        </div>
+        <div class="field">
+          <label for="p-needed">Needed by <span class="help">(optional)</span></label>
+          <span class="help">When an answer is needed before it blocks work.</span>
+          <input type="date" id="p-needed">
+        </div>
+      </div>
+      <div class="formfoot">
+        <p class="note">Filed with status <b>pending</b> as a proposal awaiting PM approval. Approval is never assumed.</p>
+        <button class="primary" type="submit" id="p-submit">Propose decision</button>
+      </div>
+      <p class="hint" id="p-msg" hidden></p>
+    </form>
+  </details>
+
+  <p class="foot">Changes here are filed into the Project Brain by Claude, who then clears them from the waiting list.</p>
+</div>
+
+<script>
+const CONFIG = {
+  project: "{{PROJECT_NAME}}",          // eyebrow: "<project> · Project Brain"
+  scopes: {{SCOPES_JSON}},              // {} on a single-site project, else {"site-a": "Site A", ...}
+};
+const STATUSES = ["pending","approved","denied","superseded","deprecated"];
+const LABEL = {pending:"Pending",approved:"Approved",denied:"Denied",superseded:"Superseded",deprecated:"Deprecated"};
+const CLS = {pending:"s-prog",approved:"s-done",denied:"s-denied",superseded:"s-na",deprecated:"s-na"};
+const EDITABLE = ["status","approver"];
+let items = [], filter = "all", db = null, coll = null, user = null, canWrite = true;
+
+const $ = id => document.getElementById(id);
+const el = (tag, props = {}, kids = []) => { const n = document.createElement(tag); Object.assign(n, props); for (const k of [].concat(kids)) if (k != null) n.append(k); return n; };
+const pill = (s, extra = "") => el("span", {className: "pill " + (CLS[s] || "s-todo") + extra, textContent: LABEL[s] || s || "—"});
+const idNum = id => parseInt(String(id).replace(/\D/g, ""), 10) || 0;
+const show = v => (v === undefined || v === null || v === "") ? "—" : String(v);
+
+$("eyebrow").textContent = `${CONFIG.project} · Project Brain`;
+function notice(msg){ const n = $("notice"); n.textContent = msg || ""; n.hidden = !msg; }
+
+function diffs(d){
+  if (!d.synced) return null; // new
+  return EDITABLE.filter(f => (d[f] || "") !== (d.synced[f] || "")).map(f => ({f, from: d.synced[f], to: d[f]}));
+}
+const isWaiting = d => !d.synced || diffs(d).length > 0;
+
+function render(){
+  // Tally
+  const counts = {};
+  items.forEach(d => counts[d.status] = (counts[d.status] || 0) + 1);
+  const waiting = items.filter(isWaiting);
+  const tp = (cls, text) => el("span", {className: "pill " + cls, textContent: text});
+  $("tally").replaceChildren(
+    tp("s-todo", `${items.length} logged`),
+    ...STATUSES.filter(s => counts[s]).map(s => tp(CLS[s], `${counts[s]} ${LABEL[s].toLowerCase()}`)),
+    ...(waiting.length ? [tp("s-sync", `${waiting.length} waiting to file`)] : []));
+
+  // Waiting panel
+  if (!waiting.length) {
+    $("queue").replaceChildren(el("p", {className: "empty", textContent: items.length ? "Nothing waiting. This page matches the Project Brain." : "Nothing waiting. Proposals and changes made here show up in this panel until Claude files them."}));
+  } else {
+    $("queue").replaceChildren(...waiting.map(d => {
+      const ch = diffs(d);
+      const lines = ch === null
+        ? [el("div", {className: "change", textContent: "New proposal, awaiting PM approval"}), el("div", {className: "flag", textContent: `Driver: ${show(d.driver)}`})]
+        : ch.map(c => el("div", {className: "change", textContent: `${c.f}: ${show(c.from)} → ${show(c.to)}`}));
+      return el("div", {className: "qrow"}, [
+        el("span", {className: "rowno", textContent: d.id}),
+        el("div", {className: "what"}, [el("div", {textContent: d.decision}), ...lines])]);
+    }));
+  }
+
+  // List
+  if (!items.length) { $("emptystate").hidden = false; $("listbox").replaceChildren($("emptystate")); return; }
+  const match = d => filter === "all" || (filter === "pending" && d.status === "pending") ||
+    (filter === "approved" && d.status === "approved") ||
+    (filter === "closed" && ["denied","superseded","deprecated"].includes(d.status));
+  const visible = items.filter(match);
+  const ol = el("ol", {className: "items"});
+  if (!visible.length) ol.append(el("li", {className: "item"}, [el("span", {className: "rowno", textContent: "—"}), el("span", {className: "title", textContent: "No decisions match this filter."})]));
+  visible.forEach(d => ol.append(renderItem(d)));
+  $("listbox").replaceChildren(ol);
+}
+
+function renderItem(d){
+  const isNew = !d.synced, ch = diffs(d);
+  const topKids = [el("span", {className: "title", textContent: d.decision}), pill(d.status)];
+  if (isNew) topKids.push(el("span", {className: "pill s-sync flag", textContent: "New · proposal"}));
+  else if (ch.length) topKids.push(el("span", {className: "pill s-sync flag", textContent: "Changed here"}));
+
+  const meta = el("div", {className: "meta"}, [
+    el("span", {}, ["Driver ", el("b", {textContent: show(d.driver)})]),
+    el("span", {}, [d.status === "pending" ? "Approval needed from " : "Approver ", el("b", {textContent: show(d.approver)})]),
+    d.date ? el("span", {}, ["Decided ", el("span", {className: "mono", textContent: d.date})]) : null,
+    el("span", {}, ["Filed ", el("span", {className: "mono", textContent: show(d.created)})]),
+    d.needed_by ? el("span", {}, ["Needed by ", el("span", {className: "mono", textContent: d.needed_by})]) : null,
+    d.superseded_by ? el("span", {}, ["Replaced by ", el("span", {className: "mono", textContent: d.superseded_by})]) : null,
+  ]);
+  const tags = Array.isArray(d.tags) && d.tags.length ? el("div", {className: "chips"}, d.tags.map(t => el("span", {className: "chip", textContent: t}))) : null;
+
+  // Controls: status + approver only
+  const sel = el("select", {id: "status-" + d.id, disabled: !canWrite});
+  sel.setAttribute("aria-label", `Status for ${d.id}`);
+  STATUSES.forEach(s => sel.append(el("option", {value: s, textContent: LABEL[s], selected: s === d.status})));
+  sel.onchange = () => save(d, {status: sel.value});
+  const appr = el("input", {type: "text", id: "approver-" + d.id, value: d.approver || "", placeholder: "Who signs off", disabled: !canWrite, maxLength: 80});
+  appr.setAttribute("aria-label", `Approver for ${d.id}`);
+  appr.onchange = () => save(d, {approver: appr.value.trim()});
+  const controls = el("div", {className: "controls"}, [
+    el("label", {}, ["Status", sel]), el("label", {}, ["Approver", appr])]);
+  if (d.status !== "pending" && !d.approver) controls.append(el("span", {className: "hint", textContent: `${LABEL[d.status]} needs an approver.`}));
+
+  return el("li", {className: "item" + (["superseded","deprecated","denied"].includes(d.status) ? " faded" : "")}, [
+    el("span", {className: "rowno", textContent: d.id}),
+    el("div", {className: "body"}, [
+      el("div", {className: "top"}, topKids),
+      d.justification ? el("p", {className: "just", textContent: d.justification}) : null,
+      meta, tags, controls])]);
+}
+
+async function save(d, patch){
+  if (!coll) return;
+  try { await coll.doc(d.id).update({...patch, updatedAt: new Date().toISOString()}); notice(""); }
+  catch (e) { notice("That change wasn't saved. You may only have view access to this page."); render(); }
+}
+
+async function propose(ev){
+  ev.preventDefault();
+  const msg = $("p-msg"); msg.hidden = true;
+  const decision = $("p-decision").value.trim(), justification = $("p-just").value.trim(), driver = $("p-driver").value.trim(), needed = $("p-needed").value;
+  if (!decision || !justification || !driver) { msg.textContent = "Fill in the decision, the options and justification, and the driver."; msg.hidden = false; return; }
+  if (!coll) { msg.textContent = "Sign in to claude.ai to propose a decision."; msg.hidden = false; return; }
+  $("p-submit").disabled = true;
+  const holder = "tab-" + Math.random().toString(36).slice(2);
+  let next = items.reduce((m, d) => Math.max(m, idNum(d.id)), 0) + 1, filed = null;
+  try {
+    for (let tries = 0; tries < 8 && !filed; tries++, next++) {
+      const id = "D-" + String(next).padStart(3, "0");
+      const ref = coll.doc(id);
+      const lease = await ref.acquire({holder, ttlMs: 4000});
+      if (!lease.acquired) continue;
+      const snap = await ref.get();
+      if (snap.exists && snap.data()?.decision) continue;
+      const by = user ? await user.id().catch(() => null) : null;
+      const doc = {decision, justification, driver, status: "pending", created: new Date().toISOString().slice(0, 10),
+        tags: [], proposal: true, proposedBy: by, synced: null, updatedAt: new Date().toISOString()};
+      if (needed) doc.needed_by = needed;
+      await ref.set(doc);
+      filed = id;
+    }
+    if (!filed) throw new Error("no id");
+    $("pform").reset();
+    msg.textContent = `Proposed as ${filed}, pending PM approval. It's in the waiting list for Claude to file.`; msg.hidden = false;
+  } catch (e) {
+    msg.textContent = "The proposal wasn't saved. You may only have view access to this page; try again or ask the PM."; msg.hidden = false;
+  } finally { $("p-submit").disabled = !canWrite; }
+}
+
+document.querySelectorAll(".filters button").forEach(b => b.onclick = () => {
+  filter = b.dataset.f;
+  document.querySelectorAll(".filters button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  render();
+});
+$("pform").addEventListener("submit", propose);
+
+(async () => {
+  db = await window.claude?.use?.("db");
+  if (!db) { notice("This view can't load the shared decision log. Sign in to claude.ai to see it and propose decisions."); $("queue").replaceChildren(el("p", {className: "empty", textContent: "Not available in this view."})); $("p-submit").disabled = true; return; }
+  user = await window.claude.use("user");
+  if (user) { const w = await user.can("data.write"); if (w === false) { canWrite = false; $("p-submit").disabled = true; } }
+  coll = db.collection("decisions");
+  coll.orderBy("created", "desc").onSnapshot(snap => {
+    items = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(d => d.decision)
+      .sort((a, b) => (b.created || "").localeCompare(a.created || "") || idNum(b.id) - idNum(a.id));
+    render();
+  }, () => notice("The decision log couldn't load. Reload the page to try again."));
+})();
+</script>

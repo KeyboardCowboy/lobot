@@ -35,6 +35,7 @@ This file is the same in every Project Brain. It is part of Lobot (`.ai/general/
 | `docs/glossary.yaml` | Project glossary: terms with a meaning specific to this project (client acronyms, internal names, jargon). Overrides the shared glossary on conflicts. See the glossary skill. | Assistant |
 | `docs/raci.yaml` | RACI matrix: who is Responsible, Accountable, Consulted, and Informed for each area of work, agency and client, per site or program. See the raci skill. | Assistant, reviewed by PM |
 | `docs/decisions.yaml` | Decision log: project decisions, made and pending (decision, justification, driver, approver, status). See the decision-log skill. | Assistant, reviewed by PM |
+| `docs/questions.md` | Questions log: outstanding questions only the PM can answer, and their answers. See the questions skill. | Lucy, answered by PM |
 | `docs/risks.md` | Interim risk tracker (markdown table) until a risk tracker skill exists. | Assistant, reviewed by PM |
 | `docs/sources.yaml` | The project's shared Google Drive (one root per site or program when it has several), where its standard folders and files live (transcripts, contracts, client-facing Sheets), and the files already processed. See the drive-sources skill. | Lucy, reviewed by PM |
 | `docs/kickoff-checklist.md` | Local mirror of the project's kickoff checklist Sheet (one per site or program when there are several), kept until the assistant can edit Sheets. See the drive-sources skill. | Assistant, synced by PM |
@@ -53,7 +54,8 @@ Within `.ai/general/` and `.ai/project/`, rules live as markdown files at the to
 3. Read `docs/overview/index.md` (Level 1 project summary). Open deeper overview files only as the task needs.
 4. Run the journal skill's catch-up mode (`.ai/general/skills/journal/SKILL.md`): read the latest file in `docs/journals/` and recap it.
 5. If a Google Drive connector is available: when `docs/sources.yaml` maps sources, run the drive-sources skill's check and list what's new or changed in one line per source, processing nothing yet; when it has no `shared_drive`, offer once to have Lucy map the project's shared drive.
-6. Only then start the task.
+6. If the project has tracker pages (listed in the root `CLAUDE.md`) and the assistant can read them, run the tracker-pages skill's sync and list what the PM changed on each page, filing nothing yet.
+7. Only then start the task.
 
 ## Working rules
 
@@ -64,7 +66,10 @@ Within `.ai/general/` and `.ai/project/`, rules live as markdown files at the to
 - **Know the vocabulary.** When a term might have a project-specific meaning (or looks mistranscribed), check the glossary skill (`.ai/general/skills/glossary/SKILL.md`) before interpreting it.
 - **Log decisions.** Business decisions about the project (a choice between options, agreed on our watch, with a driver and an approver) go in the decision log via the decision-log skill (`.ai/general/skills/decision-log/SKILL.md`), which has the full entry test. Architecture decisions are ADRs in the code repo, never log entries: use the adr skill (`.ai/general/skills/adr/SKILL.md`), which asks the developer first and goes through a draft pull request the technical lead merges. Check the log before reopening a question. Approval is never inferred from silence.
 - **GitHub through `gh`.** Use the github skill (`.ai/general/skills/github/SKILL.md`) for issues, PRs, and project boards. Reads are free; anything visible to the team or client needs PM approval.
-- **Journal as you go, close every session.** Log completed tasks and decisions with the journal skill during the session, and run its close mode at the end of every session.
+- **Log open questions.** A question only the PM can answer goes in the questions log with the questions skill (`.ai/general/skills/questions/SKILL.md`), not left in chat or in a meeting's notes. File each answer into the record it affects.
+- **Show the records.** When the PM wants to browse the records outside the chat, use the dashboard skill (`.ai/general/skills/dashboard/SKILL.md`): a read-only local page per record, read from the files.
+- **Pages are inboxes, files are records.** Tracker pages (`.ai/general/skills/tracker-pages/SKILL.md`) are where the PM works with records outside the chat. Changes made there are filed into `docs/` through each record's skill, and every change to a record with a page is copied to the page.
+- **Journal as you go, close every session.** Log completed tasks and decisions with the journal skill during the session, and run its close mode at the end of every session (after filing any tracker page changes).
 - **Write as the PM.** Anything the PM will send or publish as themselves is drafted in their voice with the pm-voice skill (`.ai/general/skills/pm-voice/SKILL.md`), never in the assistant's personality. Learned voice changes are proposed, not applied, until the PM approves.
 - **Read Drive in place.** For material in Google Drive, use the drive-sources skill (`.ai/general/skills/drive-sources/SKILL.md`) to read it with the Drive connector rather than asking the PM to export it. Map anything the project will use more than once in `docs/sources.yaml`, using the standard layout's names so every project's drive reads the same.
 - **Source vs. derived.** Files in Google Drive, `drive`, and `repo` are sources; never modify them for PM work (the one exception is an ADR pull request via the adr skill; creating a missing standard folder or blank file in Drive through the drive-sources skill, with the PM's approval, doesn't count as modifying one). Anything the assistant produces from them (summaries, extracts, analyses) goes in `docs/`, with a note of which source it came from.

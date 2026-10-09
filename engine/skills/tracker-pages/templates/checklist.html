@@ -1,0 +1,217 @@
+<!-- Lobot tracker page template: kickoff checklist. Fill the {{…}} placeholders and CONFIG, then publish with capabilities {"db": {}, "user": {}}. See .ai/general/skills/tracker-pages/SKILL.md. -->
+<title>{{PROJECT_NAME}} Kickoff Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one working column; a "copy to Sheet" queue above the task list, each task a row keyed by its Sheet row number. */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#1d2430; --muted:#5d6878; --line:#dde1e8;
+  --accent:#1f5f8b; --accent-soft:#e3eef6;
+  --todo:#6b7585; --todo-bg:#eef0f3;
+  --prog:#9a5b00; --prog-bg:#fdf0db;
+  --done:#1d7a46; --done-bg:#e1f3e8;
+  --na:#7b8290; --na-bg:#f0f1f3;
+  --sync:#a33a2b; --sync-bg:#fbe6e2;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161c; --surface:#1a2028; --fg:#e4e8ee; --muted:#9aa4b2; --line:#2c3440;
+  --accent:#7cb4dc; --accent-soft:#1c2c3a;
+  --todo:#a3acb9; --todo-bg:#242b35; --prog:#f0b45a; --prog-bg:#33281a;
+  --done:#6fcf97; --done-bg:#183025; --na:#8a919c; --na-bg:#222830;
+  --sync:#f08b7a; --sync-bg:#3a201c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161c; --surface:#1a2028; --fg:#e4e8ee; --muted:#9aa4b2; --line:#2c3440;
+  --accent:#7cb4dc; --accent-soft:#1c2c3a;
+  --todo:#a3acb9; --todo-bg:#242b35; --prog:#f0b45a; --prog-bg:#33281a;
+  --done:#6fcf97; --done-bg:#183025; --na:#8a919c; --na-bg:#222830;
+  --sync:#f08b7a; --sync-bg:#3a201c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45;padding:0 16px}
+.wrap{max-width:860px;margin:0 auto;padding-block:28px 48px;display:grid;gap:22px}
+header{display:grid;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-size:26px;line-height:1.2;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:0}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tally{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--line);margin-top:4px}
+.bar span{display:block;height:100%}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;font-variant-numeric:tabular-nums}
+.s-todo{color:var(--todo);background:var(--todo-bg)} .s-prog{color:var(--prog);background:var(--prog-bg)}
+.s-done{color:var(--done);background:var(--done-bg)} .s-na{color:var(--na);background:var(--na-bg)}
+.s-sync{color:var(--sync);background:var(--sync-bg)}
+section.queue{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.queue h2,.list h2{font-size:15px;margin:0}
+.qhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+.qrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding-top:10px;border-top:1px solid var(--line)}
+.qrow .what{min-width:0;font-size:14px}
+.qrow .change{font-weight:600}
+.empty{color:var(--muted);font-size:14px;margin:0}
+.rowno{font-family:var(--f-mono);font-size:13px;color:var(--muted);min-width:3.2em;font-variant-numeric:tabular-nums}
+button{font:inherit;font-size:13px;font-weight:600;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:5px 12px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button:disabled{opacity:.5;cursor:default}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.list{display:grid;gap:10px}
+.lhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+ol.tasks{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+li.task{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:14px 16px;border-top:1px solid var(--line)}
+li.task:first-child{border-top:0}
+li.task.na .title{color:var(--muted);text-decoration:line-through}
+.title{font-weight:500;min-width:0}
+.controls{grid-column:2;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+select,input[type=text]{font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+input[type=text]{flex:1 1 220px;min-width:0}
+.flag{font-size:12px}
+.foot{color:var(--muted);font-size:13px}
+.notice{background:var(--sync-bg);color:var(--sync);border-radius:8px;padding:10px 12px;font-size:14px}
+@media (max-width:520px){.qrow{grid-template-columns:auto 1fr}.qrow button{grid-column:2;justify-self:start}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="eyebrow">Project Brain</div>
+    <h1>Kickoff checklist</h1>
+    <p class="sub" id="sub">Working copy of the kickoff Sheet. Change a status here, then copy it into the Sheet by row number.</p>
+    <div class="tally" id="tally"></div>
+    <div class="bar" id="bar" aria-hidden="true"></div>
+  </header>
+
+  <div class="notice" id="notice" hidden></div>
+
+  <section class="queue" aria-labelledby="qh">
+    <div class="qhead">
+      <h2 id="qh">To copy into the Sheet</h2>
+      <button class="primary" id="allCopied" hidden>Mark all copied</button>
+    </div>
+    <div id="queue"><p class="empty">Loading tasks…</p></div>
+  </section>
+
+  <section class="list" aria-labelledby="lh">
+    <div class="lhead">
+      <h2 id="lh">Tasks</h2>
+      <div class="filters" role="group" aria-label="Filter tasks">
+        <button id="f-all" data-f="all" aria-pressed="true">All</button>
+        <button id="f-open" data-f="open" aria-pressed="false">Open</button>
+        <button id="f-done" data-f="done" aria-pressed="false">Done</button>
+        <button id="f-na" data-f="na" aria-pressed="false">Not applicable</button>
+      </div>
+    </div>
+    <ol class="tasks" id="tasks"><li class="task"><span class="rowno">—</span><span class="title">Tasks appear here once they load. If nothing shows, ask Claude to load the checklist from the Sheet.</span></li></ol>
+  </section>
+
+  <p class="foot">"Not applicable" marks a task to delete from the Sheet. Statuses are saved for everyone who opens this page, and Claude reads them back for the Project Brain.</p>
+</div>
+
+<script>
+const CONFIG = {
+  project: "{{PROJECT_NAME}}",          // eyebrow: "<project> · Project Brain"
+  scopes: {{SCOPES_JSON}},              // {} on a single-site project, else {"site-a": "Site A", ...}
+  scope: "{{SCOPE_KEY}}",               // "" when the project has no scopes; db path kickoff/<scope or "all">/tasks
+  sheetUrl: "{{SHEET_URL}}", sheetTitle: "{{SHEET_TITLE}}", sheetTab: "{{SHEET_TAB}}"
+};
+const SCOPE = CONFIG.scope || "all";
+const STATUSES = ["Not started","In progress","Done","Not applicable"];
+const CLS = {"Not started":"s-todo","In progress":"s-prog","Done":"s-done","Not applicable":"s-na"};
+let tasks = [], filter = "all", db = null, coll = null, canWrite = true;
+
+const $ = id => document.getElementById(id);
+const el = (tag, props = {}, kids = []) => { const n = document.createElement(tag); Object.assign(n, props); for (const k of [].concat(kids)) n.append(k); return n; };
+const pill = (s, extra = "") => el("span", {className: "pill " + (CLS[s] || "s-todo") + extra, textContent: s});
+
+// Header from CONFIG
+(() => {
+  const scopeLabel = CONFIG.scope ? ((CONFIG.scopes || {})[CONFIG.scope] || CONFIG.scope) : "";
+  $("eyebrow").textContent = `${CONFIG.project} · ${scopeLabel || "Project Brain"}`;
+  const title = CONFIG.sheetTitle || "the kickoff Sheet";
+  $("sub").replaceChildren("Working copy of ",
+    CONFIG.sheetUrl ? el("a", {href: CONFIG.sheetUrl, target: "_blank", rel: "noopener", textContent: title}) : title,
+    CONFIG.sheetTab ? `, ${CONFIG.sheetTab} tab` : "",
+    ". Change a status here, then copy it into the Sheet by row number.");
+})();
+
+function notice(msg){ const n = $("notice"); n.textContent = msg || ""; n.hidden = !msg; }
+
+function render(){
+  // Tally
+  const counts = Object.fromEntries(STATUSES.map(s => [s, 0]));
+  tasks.forEach(t => counts[t.status] = (counts[t.status] || 0) + 1);
+  const pending = tasks.filter(t => t.status !== t.sheetStatus);
+  const tallyPill = (cls, text) => el("span", {className: "pill " + cls, textContent: text});
+  $("tally").replaceChildren(...STATUSES.map(s => tallyPill(CLS[s], `${counts[s]} ${s}`)),
+    ...(pending.length ? [tallyPill("s-sync", `${pending.length} to copy`)] : []));
+  const total = tasks.length || 1;
+  const colors = {"Done":"var(--done)","In progress":"var(--prog)","Not applicable":"var(--na)"};
+  $("bar").replaceChildren(...["Done","In progress","Not applicable"].map(s => { const b = el("span"); b.style.width = (counts[s] / total * 100) + "%"; b.style.background = colors[s]; return b; }));
+
+  // Queue
+  if (!tasks.length) { $("queue").replaceChildren(el("p", {className: "empty", textContent: "No tasks loaded yet."})); }
+  else if (!pending.length) { $("queue").replaceChildren(el("p", {className: "empty", textContent: "Nothing to copy. The Sheet matches this list."})); }
+  else {
+    $("queue").replaceChildren(...pending.map(t => {
+      const b = el("button", {textContent: "Copied", disabled: !canWrite, onclick: () => markCopied([t])});
+      b.setAttribute("aria-label", `Mark row ${t.row} copied`);
+      return el("div", {className: "qrow"}, [
+        el("span", {className: "rowno", textContent: "Row " + t.row}),
+        el("div", {className: "what"}, [ el("div", {textContent: t.task}), el("div", {className: "change", textContent: `${t.sheetStatus} → ${t.status}`}) ]),
+        b ]);
+    }));
+  }
+  $("allCopied").hidden = pending.length < 2 || !canWrite;
+
+  // Task list
+  const show = t => filter === "all" || (filter === "open" && (t.status === "Not started" || t.status === "In progress")) ||
+    (filter === "done" && t.status === "Done") || (filter === "na" && t.status === "Not applicable");
+  const visible = tasks.filter(show);
+  if (!visible.length && tasks.length) { $("tasks").replaceChildren(el("li", {className: "task"}, [el("span", {className: "rowno", textContent: "—"}), el("span", {className: "title", textContent: "No tasks match this filter."})])); return; }
+  if (!tasks.length) return;
+  $("tasks").replaceChildren(...visible.map(t => {
+    const sel = el("select", {id: "status-" + t.row, disabled: !canWrite});
+    sel.setAttribute("aria-label", `Status for row ${t.row}`);
+    STATUSES.forEach(s => sel.append(el("option", {value: s, textContent: s, selected: s === t.status})));
+    sel.onchange = () => save(t, {status: sel.value});
+    const note = el("input", {type: "text", id: "note-" + t.row, value: t.note || "", placeholder: "Note or evidence", disabled: !canWrite});
+    note.setAttribute("aria-label", `Note for row ${t.row}`);
+    note.onchange = () => save(t, {note: note.value.trim()});
+    const kids = [sel, note];
+    if (t.status !== t.sheetStatus) kids.push(el("span", {className: "pill s-sync flag", textContent: "Sheet says " + t.sheetStatus}));
+    return el("li", {className: "task" + (t.status === "Not applicable" ? " na" : "")}, [
+      el("span", {className: "rowno", textContent: "Row " + t.row}),
+      el("span", {className: "title", textContent: t.task}),
+      el("div", {className: "controls"}, kids) ]);
+  }));
+}
+
+async function save(t, patch){
+  if (!coll) return;
+  try { await coll.doc(t.id).update({...patch, updatedAt: new Date().toISOString()}); notice(""); }
+  catch (e) { notice("That change wasn't saved. You may only have view access to this page."); render(); }
+}
+async function markCopied(list){
+  for (const t of list) await save(t, {sheetStatus: t.status});
+}
+
+document.querySelectorAll(".filters button").forEach(b => b.onclick = () => {
+  filter = b.dataset.f;
+  document.querySelectorAll(".filters button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  render();
+});
+$("allCopied").onclick = () => markCopied(tasks.filter(t => t.status !== t.sheetStatus));
+
+(async () => {
+  db = await window.claude?.use?.("db");
+  if (!db) { notice("This view can't load the shared checklist. Sign in to claude.ai to see and change it."); $("queue").replaceChildren(el("p", {className: "empty", textContent: "Not available in this view."})); return; }
+  const user = await window.claude.use("user");
+  if (user) { const w = await user.can("data.write"); if (w === false) canWrite = false; }
+  coll = db.collection(`kickoff/${SCOPE}/tasks`);
+  coll.orderBy("row").onSnapshot(snap => {
+    tasks = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    render();
+  }, () => notice("The checklist couldn't load. Reload the page to try again."));
+})();
+</script>

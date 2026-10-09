@@ -61,6 +61,6 @@ Show the PM one list, grouped, every item with a one-line reason and a transcrip
 2. **Context doc changes:** people (new entries, new facts, IDs), RACI (people named to a role or area, and anyone acting outside their recorded role, per the raci skill), glossary (new terms, corrected meanings, new `aka`), overview (facts added or corrected, open gaps closed).
 3. **Decision log entries:** each proposed entry in full (decision, justification, driver, approver, status, tags), per the decision-log skill.
 4. **Flags:** risks, ADR candidates, open questions, and how each will be followed up.
-5. **Questions for the PM:** unknown people, uncertain terms, unclear owners.
+5. **Questions for the PM:** unknown people, uncertain terms, unclear owners. Whatever the PM doesn't answer during review is added to the questions log (questions skill), and the notes' open questions link to it.
 
 The PM approves, edits, or drops items in one pass. Apply only what was approved.

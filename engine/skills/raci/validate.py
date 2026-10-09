@@ -388,9 +388,11 @@ def person_email(key, people):
 def report_table(data, people, only_scope):
     """Print the matrix as Markdown, one section per scope.
 
-    Columns are the roles used in that scope, headed by title. A "Who's who"
-    table under each matrix says who fills each role and how to reach them,
-    so the client can find the right person without asking the PM.
+    Under each scope, one table per area (in the order areas first appear in
+    the file): Task | R | A | C | I, each cell naming the people who fill the
+    roles, with the role title ("Sam Lee — Technical lead"). A client A's
+    backup follows the A. A "Who's who" table under each scope gives contact
+    details, so the client can find the right person without asking the PM.
     """
     rows, roles = data.get("rows") or {}, data.get("roles") or {}
     scopes = scope_names(data)
@@ -400,27 +402,47 @@ def report_table(data, people, only_scope):
             print(f"ERROR: '{only_scope}' is not a declared scope ({', '.join(scopes)})")
             return 1
         scopes = [only_scope]
+
+    def who(role_key, scope):
+        role = roles.get(role_key)
+        if not isinstance(role, dict):
+            return str(role_key)
+        people_keys = holders(role, scope) or [TBD]
+        who_names = ", ".join("TBD" if p == TBD else person_name(p, people) for p in people_keys)
+        return f"{who_names} — {role.get('title', role_key)}"
+
+    def cell(refs, scope):
+        return "; ".join(who(r, scope) for r in as_list(refs))
+
+    print("R = does the work · A = owns the outcome and signs off (one person) · "
+          "C = consulted before · I = informed after.\n")
     for scope in scopes:
         if scope != ALL:
             print(f"## {names.get(scope, scope)}\n")
         in_scope = [(k, r) for k, r in rows.items() if scope in row_scopes(k, rows, scope_names(data))]
-        # Group by area, keeping the order areas first appear in the file.
         areas = list(dict.fromkeys(r.get("area") for _, r in in_scope))
-        in_scope.sort(key=lambda kr: areas.index(kr[1].get("area")))
-        used = {ref for _, r in in_scope for letter in LETTERS for ref in as_list(r.get(letter))}
-        cols = [k for k in roles if k in used]
-        print("| Area | Responsibility | " + " | ".join(roles[c].get("title", c) for c in cols) + " |")
-        print("|---|---|" + "---|" * len(cols))
-        for _, r in in_scope:
-            cells = []
-            for c in cols:
-                marks = [letter for letter in LETTERS if c in as_list(r.get(letter))]
-                cells.append("/".join(marks))
-            print(f"| {r.get('area')} | {r.get('responsibility')} | " + " | ".join(cells) + " |")
-        print("\n**Who's who**\n")
+        used = []
+        for area in areas:
+            print(f"### {str(area).capitalize()}\n")
+            print("| Task | R | A | C | I |")
+            print("|---|---|---|---|---|")
+            for _, r in in_scope:
+                if r.get("area") != area:
+                    continue
+                accountable = cell(r.get("A"), scope)
+                if r.get("backup"):
+                    accountable += "; backup: " + cell(r.get("backup"), scope)
+                print(f"| {r.get('responsibility')} | {cell(r.get('R'), scope)} | {accountable} | "
+                      f"{cell(r.get('C'), scope)} | {cell(r.get('I'), scope)} |")
+                for letter in LETTERS + ["backup"]:
+                    for ref in as_list(r.get(letter)):
+                        if ref in roles and ref not in used:
+                            used.append(ref)
+            print()
+        print("**Who's who**\n")
         print("| Role | Side | Person | Email |")
         print("|---|---|---|---|")
-        for c in cols:
+        for c in [k for k in roles if k in used]:
             for person in holders(roles[c], scope) or ["(nobody assigned)"]:
                 name = "TBD" if person == TBD else person_name(person, people)
                 email = "" if person == TBD else person_email(person, people)

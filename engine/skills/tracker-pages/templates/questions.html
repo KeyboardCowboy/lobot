@@ -1,0 +1,290 @@
+<!-- Lobot tracker page template: questions. Fill the {{…}} placeholders and CONFIG, then publish with capabilities {"db": {}, "user": {}}. See .ai/general/skills/tracker-pages/SKILL.md. -->
+<title>{{PROJECT_NAME}} Questions Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one working column; a "waiting for Claude" queue above open questions (answer inline), answered ones folded below. */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#1d2430; --muted:#5d6878; --line:#dde1e8;
+  --accent:#1f5f8b; --accent-soft:#e3eef6;
+  --todo:#6b7585; --todo-bg:#eef0f3;
+  --prog:#9a5b00; --prog-bg:#fdf0db;
+  --done:#1d7a46; --done-bg:#e1f3e8;
+  --na:#7b8290; --na-bg:#f0f1f3;
+  --sync:#a33a2b; --sync-bg:#fbe6e2;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161c; --surface:#1a2028; --fg:#e4e8ee; --muted:#9aa4b2; --line:#2c3440;
+  --accent:#7cb4dc; --accent-soft:#1c2c3a;
+  --todo:#a3acb9; --todo-bg:#242b35; --prog:#f0b45a; --prog-bg:#33281a;
+  --done:#6fcf97; --done-bg:#183025; --na:#8a919c; --na-bg:#222830;
+  --sync:#f08b7a; --sync-bg:#3a201c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161c; --surface:#1a2028; --fg:#e4e8ee; --muted:#9aa4b2; --line:#2c3440;
+  --accent:#7cb4dc; --accent-soft:#1c2c3a;
+  --todo:#a3acb9; --todo-bg:#242b35; --prog:#f0b45a; --prog-bg:#33281a;
+  --done:#6fcf97; --done-bg:#183025; --na:#8a919c; --na-bg:#222830;
+  --sync:#f08b7a; --sync-bg:#3a201c; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45;padding:0 16px}
+.wrap{max-width:860px;margin:0 auto;padding-block:28px 48px;display:grid;gap:22px}
+header{display:grid;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-size:26px;line-height:1.2;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:0}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tally{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.s-todo{color:var(--todo);background:var(--todo-bg)} .s-prog{color:var(--prog);background:var(--prog-bg)}
+.s-done{color:var(--done);background:var(--done-bg)} .s-na{color:var(--na);background:var(--na-bg)}
+.s-sync{color:var(--sync);background:var(--sync-bg)}
+.s-scope{color:var(--accent);background:var(--accent-soft)}
+section.queue,section.add{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.queue h2,.list h2,.add h2{font-size:15px;margin:0}
+.qrow{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding-top:10px;border-top:1px solid var(--line)}
+.qrow .what{min-width:0;font-size:14px;display:grid;gap:3px}
+.qrow .change{font-weight:600;overflow-wrap:anywhere}
+.qrow .change .fld{color:var(--muted);font-weight:500}
+.empty{color:var(--muted);font-size:14px;margin:0}
+.rowno{font-family:var(--f-mono);font-size:13px;color:var(--muted);min-width:3.6em;font-variant-numeric:tabular-nums}
+button{font:inherit;font-size:13px;font-weight:600;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:5px 12px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button:disabled{opacity:.5;cursor:default}
+.filterbar{display:grid;gap:8px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.filters .lbl{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;min-width:4.2em}
+.filters button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.list{display:grid;gap:10px}
+.lhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+ol.qs{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+li.q{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:14px 16px;border-top:1px solid var(--line)}
+li.q:first-child{border-top:0}
+.body{min-width:0;display:grid;gap:6px}
+.title{font-weight:500;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted)}
+.meta .src{overflow-wrap:anywhere}
+.answer{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-top:2px}
+select,input[type=text],textarea{font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+textarea{width:100%;min-height:62px;resize:vertical;line-height:1.4}
+.flag{font-size:12px}
+details.answered{display:grid;gap:10px}
+details.answered>summary{cursor:pointer;font-weight:700;font-size:15px;padding:4px 0}
+details.answered>ol{margin-top:10px}
+.addgrid{display:grid;gap:8px}
+.addrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.addrow label{font-size:13px;color:var(--muted);font-weight:600}
+.foot{color:var(--muted);font-size:13px}
+.notice{background:var(--sync-bg);color:var(--sync);border-radius:8px;padding:10px 12px;font-size:14px}
+@media (max-width:520px){li.q,.qrow{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="eyebrow">Project Brain</div>
+    <h1>Questions log</h1>
+    <p class="sub">Outstanding questions from <span class="rowno">docs/questions.md</span>. Type an answer and press Answer. Claude files it into the Project Brain and updates whatever record it affects.</p>
+    <div class="tally" id="tally"></div>
+  </header>
+
+  <div class="notice" id="notice" hidden></div>
+
+  <section class="queue" aria-labelledby="qh">
+    <h2 id="qh">Waiting for Claude to file</h2>
+    <div id="queue"><p class="empty">Loading questions…</p></div>
+  </section>
+
+  <section class="list" aria-labelledby="lh">
+    <div class="lhead"><h2 id="lh">Open questions</h2></div>
+    <div class="filterbar">
+      <div class="filters" role="group" aria-label="Filter by scope" id="scopeFilters">
+        <span class="lbl">Scope</span>
+        <button id="sc-any" data-sc="any" aria-pressed="true">All</button>
+      </div>
+      <div class="filters" role="group" aria-label="Filter by status">
+        <span class="lbl">Status</span>
+        <button id="st-any" data-st="any" aria-pressed="true">All</button>
+        <button id="st-open" data-st="open" aria-pressed="false">Open</button>
+        <button id="st-answered" data-st="answered" aria-pressed="false">Answered</button>
+      </div>
+    </div>
+    <ol class="qs" id="open"><li class="q"><span class="rowno">—</span><span class="title">Questions appear here once they load. If nothing shows, ask Claude to load the questions log from the Project Brain.</span></li></ol>
+    <details class="answered" id="answeredBox">
+      <summary id="answeredSum">Answered</summary>
+      <ol class="qs" id="answered"></ol>
+    </details>
+  </section>
+
+  <section class="add" aria-labelledby="ah">
+    <h2 id="ah">Add a question</h2>
+    <form class="addgrid" id="addForm">
+      <textarea id="newQ" aria-label="Question text" placeholder="What do you need answered?" required></textarea>
+      <div class="addrow">
+        <label for="newScope" id="newScopeLbl">Scope</label>
+        <select id="newScope"></select>
+        <button class="primary" type="submit" id="addBtn">Add question</button>
+      </div>
+    </form>
+  </section>
+
+  <p class="foot">Changes here are filed into the Project Brain by Claude, who then clears them from the waiting list.</p>
+</div>
+
+<script>
+const CONFIG = {
+  project: "{{PROJECT_NAME}}",          // eyebrow: "<project> · Project Brain"
+  scopes: {{SCOPES_JSON}},              // {} on a single-site project, else {"site-a": "Site A", ...}
+};
+const HAS_SCOPES = Object.keys(CONFIG.scopes || {}).length > 0;   // no scopes: hide scope UI, everything is "all"
+const SCOPES = {...(CONFIG.scopes || {}), all: "Project-wide"};
+const FIELDS = {status: "Status", answer: "Answer"};
+let qs = [], scopeF = "any", statusF = "any", coll = null, canWrite = true;
+const drafts = {};          // unsaved answer text, keyed by question id
+const editing = new Set();  // answered questions with the answer editor open
+
+const $ = id => document.getElementById(id);
+const el = (tag, props = {}, kids = []) => { const n = document.createElement(tag); Object.assign(n, props); for (const k of [].concat(kids)) n.append(k); return n; };
+const pill = (cls, text) => el("span", {className: "pill " + cls, textContent: text});
+const statusPill = s => pill(s === "answered" ? "s-done" : "s-prog", s === "answered" ? "Answered" : "Open");
+
+$("eyebrow").textContent = `${CONFIG.project} · Project Brain`;
+// Scope filter buttons and the add-form select, from CONFIG.scopes
+if (HAS_SCOPES) {
+  Object.entries(SCOPES).forEach(([k, label]) => {
+    const b = el("button", {id: "sc-" + k, textContent: label});
+    b.dataset.sc = k; b.setAttribute("aria-pressed", "false");
+    $("scopeFilters").append(b);
+    $("newScope").append(el("option", {value: k, textContent: label, selected: k === "all"}));
+  });
+} else {
+  $("scopeFilters").hidden = true; $("newScope").hidden = true; $("newScopeLbl").hidden = true;
+}
+
+function notice(msg){ const n = $("notice"); n.textContent = msg || ""; n.hidden = !msg; }
+
+function changes(q){
+  if (!q.synced) return null; // new: everything is pending
+  return Object.keys(FIELDS).filter(f => (q[f] ?? "") !== (q.synced[f] ?? ""));
+}
+const isPending = q => !q.synced || changes(q).length > 0;
+const show = v => v === "" || v == null ? "(blank)" : v;
+
+function render(){
+  // Keep focus and caret across re-renders from live updates.
+  const act = document.activeElement, actId = act && act.id && act.closest && act.closest("li.q") ? act.id : null;
+  const sel = actId && "selectionStart" in act ? [act.selectionStart, act.selectionEnd] : null;
+
+  // Summary
+  const open = qs.filter(q => q.status !== "answered");
+  const pending = qs.filter(isPending);
+  $("tally").replaceChildren(
+    ...(HAS_SCOPES
+      ? Object.entries(SCOPES).map(([k, label]) => { const n = open.filter(q => q.scope === k).length; return pill(n ? "s-prog" : "s-todo", `${label}: ${n} open`); })
+      : [pill(open.length ? "s-prog" : "s-todo", `${open.length} open`)]),
+    pill("s-done", `${qs.length - open.length} answered`),
+    ...(pending.length ? [pill("s-sync", `${pending.length} waiting for Claude`)] : []));
+
+  // Waiting panel
+  if (!qs.length) $("queue").replaceChildren(el("p", {className: "empty", textContent: "No questions loaded yet."}));
+  else if (!pending.length) $("queue").replaceChildren(el("p", {className: "empty", textContent: "Nothing waiting. The Project Brain matches this log."}));
+  else $("queue").replaceChildren(...pending.map(q => {
+    const lines = !q.synced
+      ? [el("div", {className: "change"}, [pill("s-sync flag", "New"), ...(HAS_SCOPES ? [" ", SCOPES[q.scope] || q.scope] : [])])]
+      : changes(q).map(f => el("div", {className: "change"}, [el("span", {className: "fld", textContent: FIELDS[f] + ": "}), `${show(q.synced[f])} → ${show(q[f])}`]));
+    return el("div", {className: "qrow"}, [ el("span", {className: "rowno", textContent: q.id}), el("div", {className: "what"}, [el("div", {textContent: q.question}), ...lines]) ]);
+  }));
+
+  // Lists
+  const match = q => scopeF === "any" || q.scope === scopeF;
+  const openVis = statusF === "answered" ? [] : open.filter(match);
+  const ansVis = statusF === "open" ? [] : qs.filter(q => q.status === "answered" && match(q));
+  if (!qs.length) return;
+  $("open").hidden = statusF === "answered";
+  $("lh").textContent = statusF === "answered" ? "Questions" : "Open questions";
+  $("open").replaceChildren(...(openVis.length ? openVis.map(card)
+    : [el("li", {className: "q"}, [el("span", {className: "rowno", textContent: "—"}), el("span", {className: "title", textContent: open.length ? "No open questions match this filter." : "No open questions. Everything has an answer."})])]));
+  $("answeredBox").hidden = statusF === "open" || !ansVis.length;
+  $("answeredSum").textContent = `Answered (${ansVis.length})`;
+  if (statusF === "answered") $("answeredBox").open = true;
+  $("answered").replaceChildren(...ansVis.map(card));
+
+  if (actId && $(actId)) { const n = $(actId); n.focus(); if (sel) try { n.setSelectionRange(sel[0], sel[1]); } catch (e) {} }
+}
+
+function card(q){
+  const answered = q.status === "answered";
+  const meta = el("div", {className: "meta"}, [
+    ...(HAS_SCOPES ? [pill("s-scope flag", SCOPES[q.scope] || q.scope)] : []), statusPill(q.status),
+    ...(isPending(q) ? [pill("s-sync flag", q.synced ? "Changed here" : "New")] : []),
+    el("span", {textContent: "Raised " + (q.raised || "—")}),
+    ...(q.source ? [el("span", {className: "src", textContent: q.source})] : []) ]);
+  const kids = [el("span", {className: "title", textContent: q.question}), meta];
+
+  if (!answered || editing.has(q.id)) {
+    const ta = el("textarea", {id: "ans-" + q.id, value: drafts[q.id] ?? q.answer ?? "", placeholder: "Your answer", disabled: !canWrite});
+    ta.setAttribute("aria-label", `Answer for ${q.id}`);
+    ta.oninput = () => { drafts[q.id] = ta.value; };
+    const go = el("button", {className: "primary", id: "btn-" + q.id, textContent: answered ? "Save answer" : "Answer", disabled: !canWrite,
+      onclick: () => { const v = ta.value.trim(); if (!v) { ta.focus(); notice(`Type an answer for ${q.id} first.`); return; } save(q, {answer: v, status: "answered"}, () => { delete drafts[q.id]; editing.delete(q.id); }); }});
+    const ctl = [go];
+    if (answered) ctl.push(el("button", {textContent: "Cancel", onclick: () => { delete drafts[q.id]; editing.delete(q.id); render(); }}));
+    kids.push(ta, el("div", {className: "controls"}, ctl));
+  } else {
+    kids.push(el("div", {className: "answer", textContent: q.answer || "(no answer text)"}));
+    kids.push(el("div", {className: "controls"}, [
+      el("button", {id: "edit-" + q.id, textContent: "Edit answer", disabled: !canWrite, onclick: () => { editing.add(q.id); render(); $("ans-" + q.id)?.focus(); }}),
+      el("button", {id: "reopen-" + q.id, textContent: "Reopen", disabled: !canWrite, onclick: () => { drafts[q.id] = q.answer || ""; save(q, {status: "open"}); }}) ]));
+  }
+  return el("li", {className: "q"}, [el("span", {className: "rowno", textContent: q.id}), el("div", {className: "body"}, kids)]);
+}
+
+async function save(q, patch, after){
+  if (!coll) return;
+  try { await coll.doc(q.id).update({...patch, updatedAt: new Date().toISOString()}); notice(""); if (after) after(); render(); }
+  catch (e) { notice(`${q.id} wasn't saved. You may only have view access to this page.`); render(); }
+}
+
+function nextId(){
+  const max = qs.reduce((m, q) => Math.max(m, parseInt(String(q.id).replace(/\D/g, ""), 10) || 0), 0);
+  return "Q-" + String(max + 1).padStart(3, "0");
+}
+function today(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+
+$("addForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const text = $("newQ").value.trim();
+  if (!text) { $("newQ").focus(); return; }
+  if (!coll) { notice("Sign in to claude.ai to add a question."); return; }
+  const id = nextId();
+  $("addBtn").disabled = true;
+  try {
+    await coll.doc(id).set({id, question: text, scope: HAS_SCOPES ? $("newScope").value : "all", raised: today(), source: "Questions Log page", status: "open", answer: "", synced: null, updatedAt: new Date().toISOString()});
+    $("newQ").value = ""; notice("");
+  } catch (err) { notice("The question wasn't added. You may only have view access to this page."); }
+  $("addBtn").disabled = !canWrite;
+});
+
+function wireFilters(attr, set){
+  const btns = document.querySelectorAll(`.filters button[data-${attr}]`);
+  btns.forEach(b => b.onclick = () => { set(b.dataset[attr]); btns.forEach(x => x.setAttribute("aria-pressed", String(x === b))); render(); });
+}
+wireFilters("sc", v => scopeF = v);
+wireFilters("st", v => statusF = v);
+
+(async () => {
+  const db = await window.claude?.use?.("db");
+  if (!db) { notice("This view can't load the shared questions log. Sign in to claude.ai to see and answer questions."); $("queue").replaceChildren(el("p", {className: "empty", textContent: "Not available in this view."})); $("addBtn").disabled = true; return; }
+  const user = await window.claude.use("user");
+  if (user) { const w = await user.can("data.write"); if (w === false) { canWrite = false; $("addBtn").disabled = true; $("newQ").disabled = true; } }
+  coll = db.collection("questions");
+  coll.orderBy("id").onSnapshot(snap => {
+    qs = snap.docs.map(d => ({...d.data(), id: d.id}));
+    render();
+  }, () => notice("The questions log couldn't load. Reload the page to try again."));
+})();
+</script>

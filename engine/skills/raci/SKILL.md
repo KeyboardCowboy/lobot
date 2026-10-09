@@ -195,7 +195,7 @@ Everything one person holds, by site:
 python3 .ai/general/skills/raci/validate.py docs/raci.yaml --person smith-bob
 ```
 
-The matrix as Markdown, with a "Who's who" contact table under it (one section per site, or `--scope site-a` for one site). Use it to share with the client; the PM approves anything sent outside the team.
+The matrix as Markdown, grouped by area, with columns Task, R, A, C, I and each cell naming the people and their role, plus a "Who's who" contact table under it (one section per site, or `--scope site-a` for one site). Use it to share with the client; the PM approves anything sent outside the team.
 
 ```sh
 python3 .ai/general/skills/raci/validate.py docs/raci.yaml --table
