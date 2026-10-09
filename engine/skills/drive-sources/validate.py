@@ -3,7 +3,8 @@
 
 Usage: python3 validate.py [path/to/sources.yaml]
 
-Checks the `shared_drive` link, the `sources` map (Google Drive folders and
+Checks the `scopes` (sites or programs, when the project has several), the
+`shared_drive` link (one per scope when scopes are declared), the `sources` map (Google Drive folders and
 files the project uses), the `not_used` list (standard layout items the project
 doesn't have), and the `processed` list (files already handled). Standard keys
 are checked against layout.yaml in this script's folder.
@@ -20,6 +21,7 @@ except ImportError:
     sys.exit("PyYAML is required: pip install pyyaml")
 
 KEY_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+SCOPED_KEY_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*(@[a-z0-9]+(-[a-z0-9]+)*)?$")
 KINDS = {"folder", "file"}
 PURPOSES = {"transcripts", "reference", "deliverable"}
 SOURCE_FIELDS = {"kind", "url", "purpose", "handler", "copy_to", "since", "subfolders",
@@ -30,7 +32,7 @@ FILE_URL = re.compile(
     r"^https://(?:docs\.google\.com/(?:document|spreadsheets|presentation|forms)/(?:u/\d+/)?d/"
     r"|drive\.google\.com/(?:file/d/|open\?id=))([A-Za-z0-9_-]{10,})")
 DRIVE_ID = re.compile(r"^[A-Za-z0-9_-]{10,}$")
-TOP_LEVEL = ("shared_drive", "sources", "not_used", "processed")
+TOP_LEVEL = ("scopes", "shared_drive", "sources", "not_used", "processed")
 LAYOUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "layout.yaml")
 
 
@@ -92,14 +94,57 @@ def load_layout(errors):
         return {}
 
 
-def check_shared_drive(drive, errors):
-    if not isinstance(drive, dict):
-        errors.append("shared_drive must be a mapping with url and added")
+def split_key(key):
+    """'contracts@site-a' -> ('contracts', 'site-a'); 'contracts' -> ('contracts', None)."""
+    base, _, scope = str(key).partition("@")
+    return base, (scope or None)
+
+
+def check_scopes(scopes, errors):
+    if scopes is None:
+        return {}
+    if not isinstance(scopes, dict) or len(scopes) < 2:
+        errors.append("scopes must map two or more scope keys to quoted display names "
+                      "(leave it out on a single-site project)")
+        return scopes if isinstance(scopes, dict) else {}
+    for key, name in scopes.items():
+        if not isinstance(key, str) or not KEY_RE.match(key):
+            errors.append(f"[scopes.{key}] key must be lowercase and hyphenated")
+        if not isinstance(name, str) or not name.strip():
+            errors.append(f"[scopes.{key}] needs a quoted display name")
+    return scopes
+
+
+def check_root(root, where, errors):
+    if not isinstance(root, dict):
+        errors.append(f"{where} must be a mapping with url and added")
         return
-    if not drive_id(str(drive.get("url") or ""), "folder"):
-        errors.append("[shared_drive] url is not a Google Drive folder link")
-    if not is_date(drive.get("added")):
-        errors.append("[shared_drive] added must be a date (YYYY-MM-DD)")
+    if not drive_id(str(root.get("url") or ""), "folder"):
+        errors.append(f"{where} url is not a Google Drive folder link")
+    if not is_date(root.get("added")):
+        errors.append(f"{where} added must be a date (YYYY-MM-DD)")
+
+
+def check_shared_drive(drive, scopes, errors):
+    if not scopes:
+        check_root(drive, "[shared_drive]", errors)
+        return
+    if not isinstance(drive, dict) or "url" in drive:
+        errors.append("shared_drive must map each scope to its own {url, added} when scopes are declared")
+        return
+    for key, root in drive.items():
+        if key not in scopes:
+            errors.append(f"[shared_drive.{key}] is not a declared scope")
+        check_root(root, f"[shared_drive.{key}]", errors)
+    for key in scopes:
+        if key not in drive:
+            errors.append(f"[shared_drive] no root folder for scope '{key}'")
+
+
+def check_scope_suffix(key, scopes, where, errors):
+    _, scope = split_key(key)
+    if scope and scope not in scopes:
+        errors.append(f"{where} scope '{scope}' is not declared in scopes")
 
 
 def check_layout_match(key, s, layout, where, errors):
@@ -111,13 +156,14 @@ def check_layout_match(key, s, layout, where, errors):
             errors.append(f"{where} is a standard layout item: {field} must be '{item.get(field)}'")
 
 
-def check_not_used(not_used, sources, layout, errors):
+def check_not_used(not_used, sources, layout, scopes, errors):
     if not isinstance(not_used, dict):
         errors.append("not_used must be a mapping of layout-key: \"reason\"")
         return
     for key, reason in not_used.items():
         where = f"[not_used.{key}]"
-        if key not in layout:
+        check_scope_suffix(key, scopes, where, errors)
+        if split_key(key)[0] not in layout:
             errors.append(f"{where} is not a standard layout item")
         if key in sources:
             errors.append(f"{where} is also in sources")
@@ -125,7 +171,7 @@ def check_not_used(not_used, sources, layout, errors):
             errors.append(f"{where} needs a quoted reason")
 
 
-def check_sources(sources, layout, errors, warnings):
+def check_sources(sources, layout, scopes, errors, warnings):
     if not isinstance(sources, dict):
         errors.append("sources must be a mapping of source-key: {entry}")
         return {}
@@ -136,8 +182,9 @@ def check_sources(sources, layout, errors, warnings):
     ids = {}
     for key, s in sources.items():
         where = f"[sources.{key}]"
-        if not isinstance(key, str) or not KEY_RE.match(key):
-            errors.append(f"{where} key must be lowercase and hyphenated")
+        if not isinstance(key, str) or not SCOPED_KEY_RE.match(key):
+            errors.append(f"{where} key must be lowercase and hyphenated (optionally @scope)")
+        check_scope_suffix(key, scopes, where, errors)
         if not isinstance(s, dict):
             errors.append(f"{where} entry must be a mapping")
             continue
@@ -170,7 +217,7 @@ def check_sources(sources, layout, errors, warnings):
             errors.append(f"{where} copy_to must be a folder under docs/")
         if "notes" in s and not isinstance(s["notes"], str):
             errors.append(f"{where} notes must be a quoted string")
-        check_layout_match(key, s, layout, where, errors)
+        check_layout_match(split_key(key)[0], s, layout, where, errors)
         if purpose == "transcripts":
             if kind != "folder":
                 errors.append(f"{where} a transcripts source must be a folder")
@@ -242,11 +289,12 @@ def main(path):
         if key not in TOP_LEVEL:
             errors.append(f"unknown top-level key '{key}'")
     layout = load_layout(errors)
+    scopes = check_scopes(data.get("scopes"), errors)
     if data.get("shared_drive") is not None:
-        check_shared_drive(data["shared_drive"], errors)
-    sources = check_sources(data.get("sources") or {}, layout, errors, warnings)
+        check_shared_drive(data["shared_drive"], scopes, errors)
+    sources = check_sources(data.get("sources") or {}, layout, scopes, errors, warnings)
     not_used = data.get("not_used") or {}
-    check_not_used(not_used, sources if isinstance(sources, dict) else {}, layout, errors)
+    check_not_used(not_used, sources if isinstance(sources, dict) else {}, layout, scopes, errors)
     count = check_processed(data.get("processed") or [], sources, errors, warnings)
 
     for w in warnings:
@@ -258,7 +306,12 @@ def main(path):
         return 1
     if isinstance(not_used, dict):
         accounted = set(sources) | set(not_used)
-        open_items = [k for k in layout if k not in accounted]
+        if scopes:
+            # An unscoped key covers every scope; key@scope covers that scope only.
+            open_items = [f"{k}@{sc}" for k in layout for sc in scopes
+                          if k not in accounted and f"{k}@{sc}" not in accounted]
+        else:
+            open_items = [k for k in layout if k not in accounted]
         if open_items:
             print(f"NOTE:  standard items not yet mapped or marked not used: {', '.join(open_items)}")
     print(f"OK: {len(sources)} sources, {count} processed, {len(warnings)} warning(s).")
