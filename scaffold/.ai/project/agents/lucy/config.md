@@ -6,8 +6,8 @@ Project-specific settings for Lucy (`.ai/general/agents/lucy.md`).
 
 Promote an area by moving it to Autonomous. Promote when the PM has had a run of approvals with no corrections (see `corrections.md` in this folder).
 
-- **Autonomous:** meeting notes (`docs/meetings/`), journal (`docs/journals/`), intake and filing, including the processed list in `docs/sources.yaml`.
-- **Junior (propose, PM approves):** `docs/people.yaml`, RACI, `docs/decisions.yaml`, `docs/glossary.yaml`, `docs/risks.md`, the source map in `docs/sources.yaml`, Drive changes (creating folders and files in the project's shared drive).
+- **Autonomous:** meeting notes (`docs/meetings/`), journal (`docs/journals/`), intake and filing, including the processed list in `docs/sources.yaml`, RACI (`docs/raci.yaml`, clear sources only; see the raci skill).
+- **Junior (propose, PM approves):** `docs/people.yaml`, `docs/decisions.yaml`, `docs/glossary.yaml`, `docs/risks.md`, the source map in `docs/sources.yaml`, Drive changes (creating folders and files in the project's shared drive).
 
 ## Sources (read-only)
 

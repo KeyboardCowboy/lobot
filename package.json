@@ -1,6 +1,6 @@
 {
   "name": "lobot",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Lullabot's shared system for running a project with an AI assistant: rules, skills, agents, and record formats, installed into a Project Brain.",
   "bin": {
     "lobot": "tools/lobot.js"
