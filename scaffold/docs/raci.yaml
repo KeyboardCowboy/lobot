@@ -1,0 +1,5 @@
+# RACI matrix: who is Responsible, Accountable, Consulted, and Informed, agency and client.
+# Managed by the raci skill: .ai/general/skills/raci/SKILL.md
+# Rows name roles; roles name people (docs/people.yaml).
+# Validate after every edit: python3 .ai/general/skills/raci/validate.py docs/raci.yaml
+# Shareable table: add --table

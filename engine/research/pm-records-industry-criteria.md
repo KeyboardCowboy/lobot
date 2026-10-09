@@ -1,12 +1,12 @@
 ---
 title: Industry criteria for ADRs, decision logs, risk registers, and RACI matrices
-status: draft research by the assistant; not yet reviewed by a PM. Nothing here has been adopted into a skill.
+status: draft research by the assistant; not yet reviewed by a PM. The RACI section has been ruled on and built as the raci skill; the rest has not been adopted.
 sources: web research on 2026-10-01, listed under Sources. Pages marked ✓ were read twice (a research pass, then a direct check of the quoted claims). The PMBOK Guide, ISO 31000, and the PRINCE2 manual are paywalled and were not read; they appear only through pages that quote them.
-updated: 2026-10-01
+updated: 2026-10-09
 ---
 # Industry criteria for ADRs, decision logs, risk registers, and RACI matrices
 
-Reference material for refining the record skills (`adr`, `decision-log`) and for designing the ones not yet built (risk tracker, RACI). Portable: nothing here is specific to one project.
+Reference material for refining the record skills (`adr`, `decision-log`) and for designing the ones not yet built (risk tracker). The RACI section led to the raci skill. Portable: nothing here is specific to one project.
 
 ## How to read this
 
@@ -168,7 +168,7 @@ The interim table has ID, risk, severity, status, source, confirmed by, and next
 11. **Opportunities.** Tracked or not?
 12. **List size.** A cap or a pruning rule?
 
-## 4. RACI matrices (skill not built yet)
+## 4. RACI matrices (built as the raci skill)
 
 ### What the sources say
 
@@ -219,6 +219,15 @@ The interim table has ID, risk, severity, status, source, confirmed by, and next
 6. **Client approvals.** Record a backup approver and a response window per approval row?
 7. **Format.** A YAML file with a validator that runs the checks above?
 8. **Agreement.** Who agrees to it, where is that recorded, and what triggers a review?
+
+### PM rulings (2026-10-09)
+
+- **Strictly one A per row**, and A is one person in every site or program. Plain RACI, no S.
+- **Rows cover agency-internal work too**, not just handoffs, so the shared table works as a "who to go to" directory for the client.
+- **Columns are roles**, each tied to a side (agency or client) and to people in the people directory.
+- **Multi-site projects** put per-site differences in who fills a role; a row is overridden for one site only when the pattern differs.
+- **The librarian may apply assignments when the source is clear** (a client lead naming their point person) and asks when it isn't.
+- Client A rows carry a backup and a response window; the SOW wins where it speaks; drift between the matrix and what happens is reported, never fixed silently.
 
 ## 5. How the four fit together
 
