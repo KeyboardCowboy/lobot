@@ -37,6 +37,7 @@ This file is the same in every Project Brain. It is part of Lobot (`.ai/general/
 | `docs/decisions.yaml` | Decision log: project decisions, made and pending (decision, justification, driver, approver, status). See the decision-log skill. | Assistant, reviewed by PM |
 | `docs/risks.md` | Interim risk tracker (markdown table) until a risk tracker skill exists. | Assistant, reviewed by PM |
 | `docs/sources.yaml` | The project's shared Google Drive (one root per site or program when it has several), where its standard folders and files live (transcripts, contracts, client-facing Sheets), and the files already processed. See the drive-sources skill. | Lucy, reviewed by PM |
+| `docs/kickoff-checklist.md` | Local mirror of the project's kickoff checklist Sheet (one per site or program when there are several), kept until the assistant can edit Sheets. See the drive-sources skill. | Assistant, synced by PM |
 | `docs/transcripts/` | Raw meeting transcripts and snapshots of transcripts read from Drive (source; never edit). | PM + Lucy |
 | `docs/meetings/` | Derived meeting notes (`YYYY-MM-DD-<slug>.md`) from transcripts: TL;DR, overview, action items, flags, with a link to the transcript. See the meeting-notes skill. | Assistant, reviewed by PM |
 | `docs/journals/` | Daily journal (`YYYY-MM-DD.md`): what was done, why, decisions, attributed thoughts. See the journal skill. | Assistant, reviewed by PM |

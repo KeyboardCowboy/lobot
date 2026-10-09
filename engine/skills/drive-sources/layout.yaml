@@ -5,12 +5,45 @@
 # Fields:
 #   name       the name to give it when Lucy creates it
 #   look_for   other names it often goes by, to match an existing folder or file
+#   parent     where it belongs: root (the top level of the shared drive, or of each scope's root)
+#              or the key of the layout folder it sits in. No parent: anywhere in the drive.
 #   kind       folder | file
 #   file_type  document | spreadsheet | presentation (files only: what to create)
 #   purpose    transcripts | reference | deliverable
 #   handler, copy_to, record: copied into the project's entry (see SKILL.md)
 #   why        one line Lucy can use to explain it to the PM
 items:
+  # Every project's root holds at least these three folders.
+  project-management:
+    name: "Project Management"
+    look_for: ["PM", "Management"]
+    parent: root
+    kind: folder
+    purpose: reference
+    why: "Running the project: meeting transcripts, status, plans, and trackers."
+  client-assets:
+    name: "Client Assets"
+    look_for: ["Assets", "From client", "Client files", "Brand"]
+    parent: root
+    kind: folder
+    purpose: reference
+    why: "Material the client hands over: brand files, content, access details, existing docs."
+  strategy-design:
+    name: "Strategy & Design"
+    look_for: ["Strategy and Design", "Strategy", "Design", "UX"]
+    parent: root
+    kind: folder
+    purpose: reference
+    why: "Discovery, strategy, and design work: research, IA, wireframes, designs."
+  kickoff-checklist:
+    name: "Kickoff tasks: <project name>"
+    look_for: ["Kickoff tasks", "Kickoff checklist", "Project Kickoff Checklist", "Project initiation"]
+    parent: root
+    kind: file
+    file_type: spreadsheet
+    purpose: deliverable
+    record: docs/kickoff-checklist.md
+    why: "Lullabot's new-project checklist and kickoff agendas. Copied from the template and named for the project so searches tell them apart."
   contracts:
     name: "Contracts"
     look_for: ["SOW", "Statement of work", "MSA", "Legal", "Agreements"]
@@ -20,6 +53,7 @@ items:
   meeting-transcripts:
     name: "Meeting transcripts"
     look_for: ["Meet Recordings", "Transcripts", "Recordings", "Meeting notes"]
+    parent: project-management
     kind: folder
     purpose: transcripts
     handler: meeting-notes
