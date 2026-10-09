@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.0](https://github.com/Lullabot/lobot/compare/v0.5.0...v0.6.0) (2026-10-09)
+
+### Added
+
+* **engine:** Generate checklist artifact in Claude. ([79d3418](https://github.com/Lullabot/lobot/commit/79d3418b312beacda069a2a3ae9e078e16aad875))
+
 ## [0.5.0](https://github.com/Lullabot/lobot/compare/v0.4.1...v0.5.0) (2026-10-09)
 
 ### Added
