@@ -1,0 +1,6 @@
+# Drive sources: the project's shared drive, the folders and files it uses, and what has been processed.
+# Managed by the drive-sources skill: .ai/general/skills/drive-sources/SKILL.md
+# Validate after every edit: python3 .ai/general/skills/drive-sources/validate.py docs/sources.yaml
+sources: {}
+not_used: {}
+processed: []

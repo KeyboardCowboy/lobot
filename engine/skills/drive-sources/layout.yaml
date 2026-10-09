@@ -1,0 +1,41 @@
+# Standard shared drive layout: the folders and files every Lullabot project's shared drive is expected to have.
+# Lucy compares a project's shared drive to this list (drive-sources skill, "Map the shared drive").
+# Each key is also the source key used in a project's docs/sources.yaml, so the same thing has the same name on every project.
+#
+# Fields:
+#   name       the name to give it when Lucy creates it
+#   look_for   other names it often goes by, to match an existing folder or file
+#   kind       folder | file
+#   file_type  document | spreadsheet | presentation (files only: what to create)
+#   purpose    transcripts | reference | deliverable
+#   handler, copy_to, record: copied into the project's entry (see SKILL.md)
+#   why        one line Lucy can use to explain it to the PM
+items:
+  contracts:
+    name: "Contracts"
+    look_for: ["SOW", "Statement of work", "MSA", "Legal", "Agreements"]
+    kind: folder
+    purpose: reference
+    why: "Signed SOWs, change orders, and agreements. Read before scope questions."
+  meeting-transcripts:
+    name: "Meeting transcripts"
+    look_for: ["Meet Recordings", "Transcripts", "Recordings", "Meeting notes"]
+    kind: folder
+    purpose: transcripts
+    handler: meeting-notes
+    copy_to: docs/transcripts/
+    why: "Where Google Meet saves call transcripts, so new ones can be found and filed."
+  risk-register:
+    name: "Risk register"
+    look_for: ["Risks", "RAID log", "Risk log"]
+    kind: file
+    file_type: spreadsheet
+    purpose: deliverable
+    record: docs/risks.md
+    why: "The risk list the client sees. docs/risks.md stays the record of truth for now."
+  status-reports:
+    name: "Status reports"
+    look_for: ["Status", "Weekly updates", "Reports"]
+    kind: folder
+    purpose: reference
+    why: "Status updates sent to the client, for history and consistency."

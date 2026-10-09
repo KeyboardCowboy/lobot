@@ -6,13 +6,13 @@ How the assistant hands work to the Project Brain's named agents. Everything abo
 
 | Agent | Owns | Does not touch |
 |---|---|---|
-| `lucy` (librarian) | Transcripts and meeting notes, people directory, RACI, glossary, decision log, risk tracker, journal. | GitHub, Todoist, email, calendar, anything outside the Project Brain. |
+| `lucy` (librarian) | Transcripts and meeting notes, people directory, RACI, glossary, decision log, risk tracker, journal, the project's shared Drive and its map (`docs/sources.yaml`). | GitHub, Todoist, email, calendar, anything outside the Project Brain and the project's Drive. |
 
 More agents get added to this table as they are created.
 
 ## Routing
 
-Work that falls in an agent's column "Owns" goes to that agent. Work that matches no agent is done by the assistant directly. When a task spans two agents, split it and sequence the pieces (see below).
+Work that falls in an agent's column "Owns" goes to that agent. Work that matches no agent is done by the assistant directly. When a task spans two agents, split it and sequence the pieces (see below). Lucy uses the Google Drive connector when the assistant has one. If she reports that she can't reach Drive, the assistant reads the file and saves a snapshot, then Lucy files it (see the drive-sources skill).
 
 ## Rules
 
