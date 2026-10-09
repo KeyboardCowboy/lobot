@@ -35,7 +35,8 @@ This file is the same in every Project Brain. It is part of Lobot (`.ai/general/
 | `docs/glossary.yaml` | Project glossary: terms with a meaning specific to this project (client acronyms, internal names, jargon). Overrides the shared glossary on conflicts. See the glossary skill. | Assistant |
 | `docs/decisions.yaml` | Decision log: project decisions, made and pending (decision, justification, driver, approver, status). See the decision-log skill. | Assistant, reviewed by PM |
 | `docs/risks.md` | Interim risk tracker (markdown table) until a risk tracker skill exists. | Assistant, reviewed by PM |
-| `docs/transcripts/` | Raw meeting transcripts (source; never edit). | PM |
+| `docs/sources.yaml` | The project's shared Google Drive, where its standard folders and files live (transcripts, contracts, client-facing Sheets), and the files already processed. See the drive-sources skill. | Lucy, reviewed by PM |
+| `docs/transcripts/` | Raw meeting transcripts and snapshots of transcripts read from Drive (source; never edit). | PM + Lucy |
 | `docs/meetings/` | Derived meeting notes (`YYYY-MM-DD-<slug>.md`) from transcripts: TL;DR, overview, action items, flags, with a link to the transcript. See the meeting-notes skill. | Assistant, reviewed by PM |
 | `docs/journals/` | Daily journal (`YYYY-MM-DD.md`): what was done, why, decisions, attributed thoughts. See the journal skill. | Assistant, reviewed by PM |
 | `repo/` | The project's code repository (its own git repo, not tracked by the Project Brain). Read-only for PM work unless explicitly asked; ADRs are added through the adr skill on their own branch and pull request. | Dev team |
@@ -49,7 +50,8 @@ Within `.ai/general/` and `.ai/project/`, rules live as markdown files at the to
 2. Read the rule files (`*.md`) at the top level of `.ai/general/` and `.ai/project/`, and the `description` of each skill in their `skills/` folders (skip the descriptions if your tool already lists these skills as available). Load a full skill, glossary, or script only when needed.
 3. Read `docs/overview/index.md` (Level 1 project summary). Open deeper overview files only as the task needs.
 4. Run the journal skill's catch-up mode (`.ai/general/skills/journal/SKILL.md`): read the latest file in `docs/journals/` and recap it.
-5. Only then start the task.
+5. If a Google Drive connector is available: when `docs/sources.yaml` maps sources, run the drive-sources skill's check and list what's new or changed in one line per source, processing nothing yet; when it has no `shared_drive`, offer once to have Lucy map the project's shared drive.
+6. Only then start the task.
 
 ## Working rules
 
@@ -61,7 +63,8 @@ Within `.ai/general/` and `.ai/project/`, rules live as markdown files at the to
 - **GitHub through `gh`.** Use the github skill (`.ai/general/skills/github/SKILL.md`) for issues, PRs, and project boards. Reads are free; anything visible to the team or client needs PM approval.
 - **Journal as you go, close every session.** Log completed tasks and decisions with the journal skill during the session, and run its close mode at the end of every session.
 - **Write as the PM.** Anything the PM will send or publish as themselves is drafted in their voice with the pm-voice skill (`.ai/general/skills/pm-voice/SKILL.md`), never in the assistant's personality. Learned voice changes are proposed, not applied, until the PM approves.
-- **Source vs. derived.** Files in `drive` and `repo` are sources; never modify them for PM work (the one exception is an ADR pull request via the adr skill). Anything the assistant produces from them (summaries, extracts, analyses) goes in `docs/`, with a note of which source it came from.
+- **Read Drive in place.** For material in Google Drive, use the drive-sources skill (`.ai/general/skills/drive-sources/SKILL.md`) to read it with the Drive connector rather than asking the PM to export it. Map anything the project will use more than once in `docs/sources.yaml`, using the standard layout's names so every project's drive reads the same.
+- **Source vs. derived.** Files in Google Drive, `drive`, and `repo` are sources; never modify them for PM work (the one exception is an ADR pull request via the adr skill; creating a missing standard folder or blank file in Drive through the drive-sources skill, with the PM's approval, doesn't count as modifying one). Anything the assistant produces from them (summaries, extracts, analyses) goes in `docs/`, with a note of which source it came from.
 - **One fact, one home.** People go in `docs/people.yaml`, terms in `docs/glossary.yaml`, project decisions in `docs/decisions.yaml`. Other files reference them rather than duplicating.
 - **No secrets.** Never copy credentials, keys, or personal data beyond work contact info into this directory.
 - **Instructions are refined, not accumulated.** When a rule changes, edit it in place; don't append contradictions.
@@ -76,5 +79,6 @@ Within `.ai/general/` and `.ai/project/`, rules live as markdown files at the to
 
 ## Known caveats
 
-- `drive` is an absolute symlink to one person's Google Drive mount. It breaks for a new PM, who must re-point it to their own Drive path. Tools that can only see this folder (e.g. Cowork's sandbox) may not be able to follow it; grant the Drive folder directly if needed.
+- `drive` is an absolute symlink to one person's Google Drive mount. It breaks for a new PM, who must re-point it to their own Drive path. Tools that can only see this folder (e.g. Cowork's sandbox) may not be able to follow it; grant the Drive folder directly if needed. Google Docs and Sheets appear in it only as link files, so read those through the drive-sources skill instead.
+- The drive-sources skill needs a Google Drive connector, which Cowork and claude.ai provide and other assistants may not. Without one, it falls back to files dropped in `docs/transcripts/`.
 - The Project Brain is version-controlled separately from `repo/`. `repo/` and `drive` are excluded from it. See `README.md` for setup and handoff.

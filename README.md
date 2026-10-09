@@ -17,6 +17,7 @@ Things the assistant knows how to do. You can ask for them by name, but usually 
 | Skill | What it does for you |
 |---|---|
 | **Meeting notes** | Turns a meeting transcript into notes with a summary, action items, and flags, and suggests the decisions, tasks, and risks that came out of it. |
+| **Drive sources** | Maps the project's shared Google Drive against Lullabot's standard layout (offering to create what's missing), checks it for new transcripts and changed documents, and reads them straight from Drive so you no longer export them by hand. |
 | **Decision log** | Records what was decided, why, who drove it, and who approved it, and tracks what is still waiting on approval. |
 | **People** | Keeps a directory of everyone on the project: roles, time zones, and the usernames the assistant needs to look them up in other tools. |
 | **Glossary** | Keeps track of acronyms, product names, and words that mean something specific on this project, so the assistant reads them correctly. |
@@ -30,7 +31,7 @@ Things the assistant knows how to do. You can ask for them by name, but usually 
 
 Helpers the assistant hands work to.
 
-- **Lucy, the librarian.** Takes the material you hand her (transcripts, notes, documents) and files it: meeting notes, the people directory, the glossary, the decision log, the risk list, and the journal. She works only inside the Project Brain and never touches GitHub, email, or other outside systems. Like a new hire, she starts out checking with you and earns more independence as you correct and promote her.
+- **Lucy, the librarian.** Takes the material you hand her (transcripts, notes, documents) and files it: meeting notes, the people directory, the glossary, the decision log, the risk list, the journal, and the map of the project's shared Google Drive. She works only inside the Project Brain and the project's Drive, asks before scanning the Drive or creating anything in it, and never touches GitHub, email, or other outside systems. Like a new hire, she starts out checking with you and earns more independence as you correct and promote her.
 
 ### Ground rules
 
@@ -49,7 +50,7 @@ The assistant also has a personality: calm, direct, and to the point when it tal
 
 Open your assistant in the Project Brain folder and talk to it the way you would talk to a project coordinator. At the start of each session it reads the rules, catches up on the latest journal entry, and tells you where things stand.
 
-**After a client call.** Drop the transcript into the Project Brain and say "process today's meeting with the client." Lucy writes the meeting notes. The assistant then shows you the action items, any decisions that should be logged, and anything that looks like a risk, and waits for your approval before adding them.
+**After a client call.** Drop the transcript into the Project Brain and say "process today's meeting with the client." If the project's Google Meet transcript folder is mapped (Drive sources), skip the drop: Lucy finds the new transcript in Drive and saves a copy for you. Lucy writes the meeting notes. The assistant then shows you the action items, any decisions that should be logged, and anything that looks like a risk, and waits for your approval before adding them.
 
 **Before a status update.** Ask "what did we decide about the launch date, and what's still waiting on approval?" The assistant answers from the decision log. Then ask it to "draft this week's status update for the client," and it writes one in your voice for you to edit and send.
 
