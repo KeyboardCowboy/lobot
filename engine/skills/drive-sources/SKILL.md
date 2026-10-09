@@ -82,7 +82,7 @@ processed:
 
 Field rules:
 
-- **`shared_drive`** is the project's shared drive (or top-level project folder). Set it once; the map and the drive survey start from it.
+- **`shared_drive`** is the project's shared drive (or top-level project folder). Set it once; the map and the drive survey start from it. A project with several sites or programs, each with its own root folder, gives one per scope (see "Sites and programs").
 - **Keys** for anything in the standard layout use the layout's key (`meeting-transcripts`, not `transcripts-folder`), so every project names the same thing the same way. Other keys are short, lowercase, and hyphenated, named for what the source is, not where it lives.
 - **`url`** is the link from Drive's address bar or Share button. The ID is read from it; don't store it separately.
 - **`purpose`**:
@@ -93,18 +93,51 @@ Field rules:
 - **`not_used`** lists standard layout items the PM said this project doesn't have, with the reason, so they stop coming up.
 - **`processed`** holds one entry per file handled, in the order handled. `result` is the file it became (`docs/meetings/...`), or `skipped: <reason>` when the PM chose not to process it. A file edited after it was handled gets a new entry with the new `modified` when it is handled again.
 
+## Sites and programs
+
+Most projects have one root folder and never declare `scopes`. When a project covers several sites or programs, each with its own root folder in Drive (typically one per SOW), declare them the way the raci skill does and give each its own root:
+
+```yaml
+scopes:
+  site-a: "Site A"
+  site-b: "Site B"
+shared_drive:
+  site-a:
+    url: https://drive.google.com/drive/folders/1AbC...
+    added: 2026-10-09
+  site-b:
+    url: https://drive.google.com/drive/folders/1XyZ...
+    added: 2026-10-09
+sources:
+  contracts@site-a:
+    kind: folder
+    url: https://drive.google.com/drive/folders/1DeF...
+    purpose: reference
+    added: 2026-10-09
+  meeting-transcripts:              # no @scope: one folder shared by every scope
+    kind: folder
+    # ...
+not_used:
+  status-reports@site-b: "Site B gets status in the shared weekly report."
+```
+
+- **Scope keys** are short, lowercase, and hyphenated, with a quoted display name. Use the same scope keys as `docs/raci.yaml` when it declares scopes.
+- **`<key>@<scope>`** is a source (or `not_used` entry) for that scope only. The part before `@` follows the usual key rules, so `contracts@site-a` is still the standard `contracts` item. A key with no `@scope` covers every scope.
+- **Every standard item is accounted for per scope**, by a scoped entry, an unscoped one, or `not_used`. The validator lists `<key>@<scope>` for anything still open.
+- `processed` entries name the full source key (`meeting-transcripts@site-a`).
+
 ## Map the shared drive
 
 Run this when a project is set up, when `docs/sources.yaml` has no `shared_drive`, when the PM asks to map or tidy the drive, or when the standard layout has items the project hasn't accounted for (not in `sources` and not in `not_used`). The goal is a complete map that matches the standard layout.
 
 1. **Ask before scanning.** Never scan the drive without the PM's go-ahead. Lucy offers once, briefly: what she'll look at (the top level of the shared drive, names and types only, nothing inside the files) and what she'll come back with. If the PM hasn't given the shared drive's link, ask for it.
-2. **If the PM says yes, scan the top level.** Search for files whose parent is the shared drive's ID, metadata only (no content snippets), following page tokens until the list is complete. Shared drives are usually small; if the top level has more than about 50 items, report the count and ask which folders to look in. Look one level deeper only into a folder the PM points to, or one whose name matches a layout item's `look_for`.
+2. **If the PM says yes, scan the top level** of the shared drive, or of each scope's root. Search for files whose parent is the root's ID, metadata only (no content snippets), following page tokens until the list is complete. Shared drives are usually small; if the top level has more than about 50 items, report the count and ask which folders to look in. Look one level deeper only into a folder the PM points to, or one whose name matches a layout item's `look_for`.
 3. **Match it against `layout.yaml`.** For each standard item not yet in `sources` or `not_used`, compare names, case-insensitively, against its `name` and `look_for`, and check that the kind matches (folder or file). Then report back in three short lists:
    - **Likely matches to confirm:** "Is *Meet Recordings* the meeting-transcripts folder?"
    - **Missing:** standard items with no match. For each, offer to create it in the shared drive with the layout's `name` (a folder, or a blank Doc or Sheet per `file_type`), to record where it actually lives if it's elsewhere, or to mark it not used.
    - **Unrecognized:** top-level items that match nothing. Ask whether any should be mapped, and what each is for.
 4. **If the PM says no to the scan, ask instead.** List the standard items not yet accounted for, with each one's `why`, and ask where each lives (a link), whether it should be created, or whether the project doesn't use it. Record what the PM answers; ask about the rest another time rather than repeating the whole list.
-5. **Record the answers.** Lucy writes the entries (keys and fields from `layout.yaml`, plus `added`), the `shared_drive` link if it's new, and any `not_used` reasons, then runs the validator. For a transcript folder, ask which date to start from (`since`).
+5. **Record the answers.** Lucy writes the entries (keys and fields from `layout.yaml`, plus `added`, with `@<scope>` when the project has scopes), the `shared_drive` link (or each scope's) if it's new, and any `not_used` reasons, then runs the validator. For a transcript folder, ask which date to start from (`since`).
 
 ## Check for new and changed files
 
