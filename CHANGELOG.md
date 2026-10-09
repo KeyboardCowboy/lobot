@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.0](https://github.com/Lullabot/lobot/compare/v0.4.1...v0.5.0) (2026-10-09)
+
+### Added
+
+* **engine:** Support multiple sites or scopes in a single project ([acf78df](https://github.com/Lullabot/lobot/commit/acf78dfb7f5a249d5e9b202d2f2a9fd392d9b596))
+
 ## [0.4.1](https://github.com/Lullabot/lobot/compare/v0.4.0...v0.4.1) (2026-10-09)
 
 ### Fixed
