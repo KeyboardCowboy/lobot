@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/Lullabot/lobot/compare/v0.4.0...v0.4.1) (2026-10-09)
+
+### Fixed
+
+* **tool:** stop status and update crashing on release notes ([b644754](https://github.com/Lullabot/lobot/commit/b644754161b8e9977b58167677406af5eb38332e))
+* **tool:** stop status and update crashing on release notes ([ac08355](https://github.com/Lullabot/lobot/commit/ac0835571393120402e896a0be0908e753d6a9d3))
+
 ## [0.4.0](https://github.com/Lullabot/lobot/compare/v0.3.0...v0.4.0) (2026-10-09)
 
 ### Added
